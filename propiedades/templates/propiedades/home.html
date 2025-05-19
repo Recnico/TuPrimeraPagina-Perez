@@ -1,0 +1,77 @@
+{% extends 'propiedades/base.html' %}
+{% load static %}
+
+{% block title %}Inicio - Chiletop Corretaje de Propiedades{% endblock %}
+
+{% block content %}
+  <div class="container mt-4">
+    <div id="carouselExampleIndicators" class="carousel slide mb-4" data-bs-ride="carousel">
+      <div class="carousel-indicators">
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
+      </div>
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <img src="{% static 'propiedades/img/1.jpg' %}" class="d-block w-100" alt="Imagen 1">
+        </div>
+        <div class="carousel-item">
+          <img src="{% static 'propiedades/img/3.jpg' %}" class="d-block w-100" alt="Imagen 3">
+        </div>
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <img src="{% static 'propiedades/img/bienvenida_chiletop.png' %}" class="img-fluid rounded shadow-sm" alt="Imagen de Bienvenida">
+      </div>
+      <div class="col-md-6 d-flex flex-column justify-content-center">
+        <h2 class="mb-3">Encuentra la Propiedad de tus Sueños</h2>
+        <p class="lead">Explora nuestra amplia selección de propiedades en arriendo y venta en todo Chile.</p>
+        <p>Nuestro equipo de corredores expertos está listo para ayudarte a encontrar la opción perfecta para ti.</p>
+        <a href="{% url 'buscar_venta' %}" class="btn btn-primary btn-lg">Buscar Propiedades</a>
+      </div>
+    </div>
+
+    <h2 class="mb-3">Propiedades Destacadas</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <img src="{% static 'propiedades/img/destacada_1.jpg' %}" class="card-img-top" alt="Propiedad Destacada 1">
+          <div class="card-body">
+            <h5 class="card-title">Casa Moderna en Santiago Centro</h5>
+            <p class="card-text">Amplios espacios, excelente ubicación.</p>
+            <a href="#" class="btn btn-outline-primary btn-sm">Ver Detalles</a>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <img src="{% static 'propiedades/img/destacada_2.jpg' %}" class="card-img-top" alt="Propiedad Destacada 2">
+          <div class="card-body">
+            <h5 class="card-title">Departamento con Vista al Mar en Valparaíso</h5>
+            <p class="card-text">Increíbles vistas, ideal para inversión.</p>
+            <a href="#" class="btn btn-outline-primary btn-sm">Ver Detalles</a>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <img src="{% static 'propiedades/img/destacada_3.jpg' %}" class="card-img-top" alt="Propiedad Destacada 3">
+          <div class="card-body">
+            <h5 class="card-title">Terreno Residencial en La Dehesa</h5>
+            <p class="card-text">Gran terreno para construir la casa de tus sueños.</p>
+            <a href="#" class="btn btn-outline-primary btn-sm">Ver Detalles</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'propiedades/base.html' %}
+
+{% block content %}
+<h2>Buscar Ventas por Dirección, Precio o Corredor</h2>
+<form method="get">
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Buscar</button>
+</form>
+
+<h3>Resultados:</h3>
+{% if request.GET %}
+    {% if ventas|length > 0 %}
+        <ul class="list-unstyled">
+            {% for venta in ventas %}
+                <li class="mb-3 p-3 border rounded">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1"><span class="font-weight-bold text-primary">{{ venta.direccion }}</span> - <span class="font-weight-bold">${{ venta.precio }}</span></h5>
+                            {% if busqueda_realizada %}
+                                <div class="mt-2 ml-3">
+                                    <p class="mb-0"><span class="font-weight-bold">Corredor:</span> <span class="text-success">{{ venta.Corredor.nombre }}</span></p>
+                                    <p class="mb-0"><span class="font-weight-bold">Teléfono:</span> {{ venta.Corredor.telefono }}</p>
+                                    <p class="mb-0"><span class="font-weight-bold">Correo:</span> {{ venta.Corredor.correo }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </li>
+            {% empty %}
+                <li class="list-group-item">No se encontraron propiedades con los parámetros solicitados.</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No se encontraron propiedades con los parámetros solicitados.</p>
+    {% endif %}
+{% else %}
+    <p>Mostrando todas las propiedades disponibles. Utilice el formulario para filtrar.</p>
+{% endif %}
+{% endblock %}
