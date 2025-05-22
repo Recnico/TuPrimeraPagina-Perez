@@ -1,0 +1,84 @@
+{% extends "propiedades/base.html" %}
+{% load static %} {# Necesario para usar {% static %} para las imágenes del avatar #}
+
+{% block content %}
+  <h2>Editar Perfil</h2>
+  <form method="post" novalidate enctype="multipart/form-data"> {# IMPORTANTE: Añadido enctype="multipart/form-data" #}
+    {% csrf_token %}
+
+    {# Mostrar errores generales del formulario (no asociados a un campo específico) #}
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger" role="alert">
+        {% for error in form.non_field_errors %}
+          <p class="mb-0">{{ error }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# Sección para el formulario de edición de perfil principal #}
+    <h3>Información del Usuario</h3>
+    {% for field in form %}
+      {% if field.is_hidden %}
+        {{ field }}
+      {% else %}
+        {% if field.name == 'password' %}
+          <div class="form-group mb-3">
+            <label class="form-label">Contraseña:</label>
+            <div>
+              <a href="{% url 'cambiar_contrasenia' %}" class="btn btn-outline-secondary btn-sm">
+                Cambiar contraseña
+              </a>
+            </div>
+          </div>
+        {% else %}
+          {# Renderizado estándar para los demás campos del formulario principal #}
+          <div class="form-group mb-3">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}
+              <small class="form-text text-muted d-block">{{ field.help_text|safe }}</small>
+            {% endif %}
+            {% if field.errors %}
+              <div class="invalid-feedback d-block">
+                {% for error in field.errors %}
+                  <span>{{ error }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+
+    {# Nueva sección para el Avatar #}
+    <h3>Avatar</h3>
+    {% if user.is_authenticated and user.avatar %} {# Verifica si el usuario tiene un avatar asignado #}
+        <div class="mb-3">
+            <p>Avatar actual:</p>
+            <img src="{{ user.avatar.imagen.url }}" alt="Avatar" style="max-width: 150px; max-height: 150px; border-radius: 50%; object-fit: cover;">
+        </div>
+    {% else %}
+        <p>No tienes un avatar asignado.</p>
+    {% endif %}
+
+    {% for field in avatar_form %}
+        <div class="form-group mb-3">
+            {{ field.label_tag }}
+            {{ field }} 
+            {% if field.help_text %}
+                <small class="form-text text-muted d-block">{{ field.help_text|safe }}</small>
+            {% endif %}
+            {% if field.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in field.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+
+    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+  </form>
+{% endblock %}

@@ -1,4 +1,4 @@
-{% load static %} 
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -19,6 +19,37 @@
             text-align: center;
             font-size: 0.9rem;
         }
+        /* Estilos para asegurar la alineación vertical de TODOS los elementos nav-item */
+        .navbar-nav .nav-item {
+            display: flex;        /* Convierte cada <li> en un contenedor flex */
+            align-items: center;  /* Centra verticalmente los elementos dentro del <li> */
+            /* Quitar padding o height explícito aquí para dejar que Bootstrap lo maneje,
+               a menos que sea necesario para un ajuste fino */
+        }
+
+        /* Asegura que el nav-link también se alinee si contiene múltiples elementos (nombre y avatar) */
+        .navbar-nav .nav-item .nav-link {
+            display: flex;
+            align-items: center;
+            /* Estos padding deberían ser manejados por Bootstrap por defecto,
+               los quitamos para evitar conflictos si no son necesarios */
+            /* padding-top: var(--bs-nav-link-padding-y); */
+            /* padding-bottom: var(--bs-nav-link-padding-y); */
+        }
+
+        /* Estilo para el avatar */
+        .avatar-navbar {
+            margin-left: 0.5rem; /* Espacio a la izquierda de la imagen */
+            flex-shrink: 0;      /* Evita que la imagen se encoja */
+        }
+
+        /* Ajuste específico para el botón Cerrar Sesión si no se alinea bien */
+        .navbar-nav .nav-item form .btn {
+            /* Puedes añadir un ajuste fino si el botón sigue desalineado */
+            /* Por ejemplo, un margin-top o transform para desplazarlo */
+            /* vertical-align: middle; */ /* No siempre necesario con flexbox */
+            /* transform: translateY(1px); */ /* Ajuste de 1px hacia abajo, prueba esto si es necesario */
+        }
     </style>
 </head>
 <body>
@@ -30,6 +61,31 @@
             <li class="nav-item"><a class="nav-link" href="{% url 'agregar_venta' %}">Agregar Venta</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'agregar_corredor' %}">Agregar Corredor</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'buscar_venta' %}">Buscar Venta</a></li>
+
+            {% if user.is_authenticated %}
+                {# Este nav-item contendrá el nombre de usuario y el avatar #}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'perfil' %}">
+                        <span>{{ user.username }}</span>
+                        {% if user.avatar.imagen %}
+                            <img src="{{ user.avatar.imagen.url }}" alt="Avatar" class="rounded-circle avatar-navbar" width="30" height="30">
+                        {% endif %}
+                    </a>
+                </li>
+                {# Este nav-item contendrá el formulario del botón Cerrar Sesión #}
+                <li class="nav-item">
+                    <form action="{% url 'cerrar_sesion' %}" method="post" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-light">
+                            Cerrar Sesión
+                        </button>
+                    </form>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">Iniciar Sesión</a>
+                </li>
+            {% endif %}
         </ul>
     </div>
 </nav>
@@ -40,7 +96,7 @@
 </div>
 
 <footer class="mt-5">
-    <p>Proyecto Django - Curso Python 75900</p>
+    <p>Proyecto Django - Curso Python 75900 Nicolás Pérez Cerda</p>
 </footer>
 </body>
 </html>

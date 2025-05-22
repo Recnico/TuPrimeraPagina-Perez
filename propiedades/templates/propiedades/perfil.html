@@ -1,0 +1,17 @@
+{% extends "propiedades/base.html" %}
+
+{% block title %}
+    Perfil
+{% endblock title %}
+
+{% block content_title %}
+    Perfil de usuario
+{% endblock content_title %}
+
+{% block content %}
+    <p>Nombre de usuario: {{ user.username }}</p>
+    <p>Nombre: {{ user.first_name }}</p>
+    <p>Apellido: {{ user.last_name }}</p>
+    <p>Email: {{ user.email }}</p>
+    <a href="{% url 'editar_perfil' %}">Editar Perfil</a>
+{% endblock content %}

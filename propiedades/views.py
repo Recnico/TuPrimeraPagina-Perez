@@ -1,6 +1,12 @@
 from django.shortcuts import render, redirect
-from .forms import CorredorForm, ArriendoForm, VentaForm, VentaSearchForm
-from .models import Venta
+from .forms import CorredorForm, ArriendoForm, VentaForm, VentaSearchForm , EditProfileForm , AvatarForm
+from .models import Venta , Avatar
+from django.contrib.auth.forms import UserChangeForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
+from django.contrib import messages
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 
 def home(request):
     return render(request, 'propiedades/home.html')
@@ -57,3 +63,50 @@ def buscar_venta(request):
             ventas = ventas.filter(Corredor=corredor)
 
     return render(request, 'propiedades/buscar_venta.html', {'form': form, 'ventas': ventas, 'busqueda_realizada': busqueda_realizada})
+
+def perfil(request):
+    return render(request, 'propiedades/perfil.html')
+
+
+@login_required
+def editarPerfil(request):
+    try:
+        avatar_instance = request.user.avatar 
+    except Avatar.DoesNotExist:
+        avatar_instance = None
+
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, instance=request.user)
+    
+        avatar_form = AvatarForm(request.POST, request.FILES, instance=avatar_instance)
+
+        profile_updated = False
+        avatar_updated = False
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Tu perfil ha sido actualizado correctamente.')
+            profile_updated = True
+
+        if avatar_form.is_valid():
+            avatar_obj = avatar_form.save(commit=False)
+            avatar_obj.user = request.user
+            avatar_obj.save()
+            messages.success(request, 'Tu avatar ha sido actualizado correctamente.')
+            avatar_updated = True
+        elif request.FILES: 
+            messages.error(request, 'Hubo un error al subir el avatar. Inténtalo de nuevo.')
+            
+        if profile_updated or avatar_updated:
+            return redirect('perfil')
+
+    else:
+        form = EditProfileForm(instance=request.user)
+        # password_form = PasswordChangeForm(request.user) # No necesario aquí
+        avatar_form = AvatarForm(instance=avatar_instance) # Para mostrar el avatar actual si existe
+
+    return render(request, 'propiedades/editarPerfil.html', {
+        'form': form,
+        # 'password_form': password_form, # Ya no se pasa este formulario
+        'avatar_form': avatar_form, # Pasamos el formulario del avatar a la plantilla
+    })

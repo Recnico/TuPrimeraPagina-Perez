@@ -1,0 +1,15 @@
+{% extends "propiedades/base.html" %}
+
+{% block title %}
+    Cambio de Contraseña
+{% endblock title %}
+
+{% block content_title %}
+    Perfil de usuario
+{% endblock content_title %}
+
+{% block content %}
+<h2>¡Contraseña fue Cambiada con Éxito!</h2>
+<p>Tu contraseña ha sido actualizada.</p>
+<p><a href="{% url 'login' %}">Volver al Inicio de Sesión</a></p>
+{% endblock content %}
