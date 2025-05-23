@@ -16,6 +16,9 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -31,7 +34,7 @@ SECRET_KEY = 'django-insecure-+2!^5%&krjz93wqb=f&(nip+=29omnf%gl6_$qk^7kcuryz%*$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['recccnico.pythonanywhere.com', '127.0.0.1', 'localhost']
 
 
 # Application definition
