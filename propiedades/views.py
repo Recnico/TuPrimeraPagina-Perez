@@ -2,17 +2,28 @@
 
 from django.shortcuts import render, redirect, get_object_or_404 # Agregamos get_object_or_404
 from .forms import CorredorForm, ArriendoForm, VentaForm, VentaSearchForm , EditProfileForm , AvatarForm, ImagenFormSet # Importa ImagenFormSet
-from .models import Venta , Avatar, Imagen # Asegúrate de importar Imagen
+from .models import Venta , Avatar, Imagen , Arriendo
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-from django.db import transaction # Para asegurar que todo se guarde o nada
+from django.db import transaction 
 
 def home(request):
-    return render(request, 'propiedades/home.html')
+    
+    ventas_destacadas = Venta.objects.filter(destacada=True)[:3]
+
+    
+    arriendos_destacados = Arriendo.objects.filter(destacada=True)[:3]
+
+    context = {
+        'ventas_destacadas': ventas_destacadas,
+        'arriendos_destacados': arriendos_destacados,
+    }
+    return render(request, 'propiedades/home.html', context)
+
 
 def agregar_corredor(request):
     if request.method == 'POST':

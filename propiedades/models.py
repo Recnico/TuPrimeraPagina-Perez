@@ -31,6 +31,7 @@ class Venta(models.Model):
     precio = models.IntegerField()
     imagen_principal = models.ImageField(upload_to='ventas_pics/', null=True, blank=True)
     Corredor = models.ForeignKey(Corredor, on_delete=models.CASCADE)
+    destacada = models.BooleanField(default=False)
 
     def __str__(self):
         return self.direccion
@@ -41,12 +42,18 @@ class Venta(models.Model):
 
 
 class Arriendo(models.Model):
-    direccion = models.CharField(max_length=200)
-    precio_mensual = models.IntegerField()
     Corredor = models.ForeignKey(Corredor, on_delete=models.CASCADE)
+    direccion = models.CharField(max_length=200)
+    precio_mensual = models.DecimalField(max_digits=10, decimal_places=0)
+    descripcion = models.TextField(blank=True, null=True)
+    imagen_principal = models.ImageField(upload_to='arriendos/', blank=True, null=True)
+    destacada = models.BooleanField(default=False)
 
     def __str__(self):
         return self.direccion
+    
+    def get_gallery_images(self):
+        return Imagen.objects.filter(object_id=self.id, content_type__model='arriendo')
     
 class Imagen(models.Model):
     # Campos para Generic Foreign Key

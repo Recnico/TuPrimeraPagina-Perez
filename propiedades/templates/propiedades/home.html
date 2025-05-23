@@ -5,6 +5,7 @@
 
 {% block content %}
   <div class="container mt-4">
+    {# CARRUSEL - Puedes mantenerlo con imágenes estáticas o considerar hacerlo dinámico en el futuro #}
     <div id="carouselExampleIndicators" class="carousel slide mb-4" data-bs-ride="carousel">
       <div class="carousel-indicators">
         <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
@@ -14,7 +15,6 @@
       <div class="carousel-inner">
         <div class="carousel-item active">
           <img src="{% static 'propiedades/img/1.jpg' %}" class="d-block w-100" alt="Imagen 1">
-          {# LEYENDA Y BOTÓN PARA LA PRIMERA SLIDE #}
           <div class="carousel-caption d-none d-md-block">
             <h5>Propiedad Destacada: Lujo en Las Condes</h5>
             <p>Descubre esta increíble casa con amplios jardines y piscina.</p>
@@ -23,7 +23,6 @@
         </div>
         <div class="carousel-item">
           <img src="{% static 'propiedades/img/3.jpg' %}" class="d-block w-100" alt="Imagen 3">
-          {# LEYENDA Y BOTÓN PARA LA SEGUNDA SLIDE #}
           <div class="carousel-caption d-none d-md-block">
             <h5>Arriendo: Departamento Moderno en Providencia</h5>
             <p>Ideal para la vida urbana, cerca de metro y comercios.</p>
@@ -32,7 +31,6 @@
         </div>
         <div class="carousel-item">
           <img src="{% static 'propiedades/img/2.jpg' %}" class="d-block w-100" alt="Imagen 2">
-          {# LEYENDA Y BOTÓN PARA LA TERCERA SLIDE #}
           <div class="carousel-caption d-none d-md-block">
             <h5>Oportunidad: Terreno en Desarrollo, Colina</h5>
             <p>Invierte en un sector con alta plusvalía.</p>
@@ -50,7 +48,7 @@
       </button>
     </div>
 
-    {# SECCIÓN DE BIENVENIDA #}
+    {# SECCIÓN DE BIENVENIDA - Mantenemos esta sección ya que es general #}
     <div class="row mb-4">
       <div class="col-md-6">
         <img src="{% static 'propiedades/img/bienvenida_chiletop.png' %}" class="img-fluid rounded shadow-sm" alt="Imagen de Bienvenida">
@@ -63,39 +61,59 @@
       </div>
     </div>
 
-    {# PROPIEDADES DESTACADAS #}
-    <h2 class="mb-3">Propiedades Destacadas</h2>
-    <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
-      <div class="col">
-        <div class="card h-100 shadow-sm">
-          <img src="{% static 'propiedades/img/destacada_1.jpg' %}" class="card-img-top" alt="Propiedad Destacada 1">
-          <div class="card-body">
-            <h5 class="card-title">Casa Moderna en Santiago Centro</h5>
-            <p class="card-text">Amplios espacios, excelente ubicación.</p>
-            <a href="#" class="btn btn-outline-primary btn-sm">Ver Detalles</a>
-          </div>
+    {# INICIO DE LA SECCIÓN DINÁMICA DE PROPIEDADES DESTACADAS #}
+    <h2 class="mb-3 text-center">Propiedades Destacadas</h2> {# Cambié a h2 y centré #}
+
+    {% if ventas_destacadas or arriendos_destacados %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4"> {# Añadido g-4 para espaciado y mb-4 para margen inferior #}
+            {# Mostrar Propiedades de Venta Destacadas #}
+            {% for venta in ventas_destacadas %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        {% if venta.imagen_principal %}
+                            <img src="{{ venta.imagen_principal.url }}" class="card-img-top" alt="Imagen de {{ venta.direccion }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <img src="{% static 'propiedades/no_image.png' %}" class="card-img-top" alt="No hay imagen" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ venta.direccion }}</h5>
+                            {# Asegúrate de que tu modelo Venta tenga una descripción si quieres mostrarla #}
+                            {# <p class="card-text">{{ venta.descripcion|truncatechars:100 }}</p> #}
+                            <p class="card-text"><strong>Precio:</strong> ${{ venta.precio|floatformat:0 }}</p>
+                            <p class="card-text text-muted">Venta</p>
+                            <a href="{% url 'detalle_venta' pk=venta.pk %}" class="btn btn-outline-primary btn-sm">Ver Detalles</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            {# Mostrar Propiedades de Arriendo Destacadas #}
+            {% for arriendo in arriendos_destacados %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        {% if arriendo.imagen_principal %}
+                            <img src="{{ arriendo.imagen_principal.url }}" class="card-img-top" alt="Imagen de {{ arriendo.direccion }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <img src="{% static 'propiedades/no_image.png' %}" class="card-img-top" alt="No hay imagen" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ arriendo.direccion }}</h5>
+                            {# Asegúrate de que tu modelo Arriendo tenga una descripción si quieres mostrarla #}
+                            {# <p class="card-text">{{ arriendo.descripcion|truncatechars:100 }}</p> #}
+                            <p class="card-text"><strong>Precio Mensual:</strong> ${{ arriendo.precio_mensual|floatformat:0 }}</p>
+                            <p class="card-text text-muted">Arriendo</p>
+                            <a href="{% url 'detalle_arriendo' pk=arriendo.pk %}" class="btn btn-outline-primary btn-sm">Ver Detalles</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-      </div>
-      <div class="col">
-        <div class="card h-100 shadow-sm">
-          <img src="{% static 'propiedades/img/destacada_2.jpg' %}" class="card-img-top" alt="Propiedad Destacada 2">
-          <div class="card-body">
-            <h5 class="card-title">Departamento con Vista al Mar en Valparaíso</h5>
-            <p class="card-text">Increíbles vistas, ideal para inversión.</p>
-            <a href="#" class="btn btn-outline-primary btn-sm">Ver Detalles</a>
-          </div>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card h-100 shadow-sm">
-          <img src="{% static 'propiedades/img/destacada_3.jpg' %}" class="card-img-top" alt="Propiedad Destacada 3">
-          <div class="card-body">
-            <h5 class="card-title">Terreno Residencial en La Dehesa</h5>
-            <p class="card-text">Gran terreno para construir la casa de tus sueños.</p>
-            <a href="#" class="btn btn-outline-primary btn-sm">Ver Detalles</a>
-          </div>
-        </div>
-      </div>
-    </div>
+    {% else %}
+        <p class="text-center alert alert-info">No hay propiedades destacadas disponibles en este momento.</p>
+    {% endif %}
+    {# FIN DE LA SECCIÓN DINÁMICA DE PROPIEDADES DESTACADAS #}
+
+    {# Puedes añadir más secciones aquí si las tenías después de las propiedades destacadas #}
+
   </div>
 {% endblock %}
