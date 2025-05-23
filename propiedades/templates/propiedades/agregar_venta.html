@@ -1,0 +1,150 @@
+{# propiedades/templates/propiedades/agregar_venta.html #}
+
+{% extends 'propiedades/base.html' %}
+
+{% block content %}
+<h2>{{ titulo }}</h2>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <h3>Detalles de la Venta</h3>
+    {{ venta_form.as_p }} {# Renderiza los campos del formulario de Venta #}
+
+    <h3>Galería de Imágenes</h3>
+    {{ formset.management_form }} {# ESTO ES CRUCIAL PARA LOS FORMSETS #}
+
+    <div id="image-formset-container">
+        {% for form in formset %}
+            <div class="image-formset-row">
+                {# Muestra los campos del formulario de imagen #}
+                {{ form.as_p }}
+                {# Si can_delete=True en el formset, esto añade el checkbox de eliminación #}
+                {% if form.instance.pk %}<p>{{ form.DELETE }} Eliminar esta imagen</p>{% endif %}
+                <hr>
+            </div>
+        {% empty %} {# Si no hay formularios en el formset (primera carga y extra=0) #}
+            <p>No hay campos de imagen disponibles. Haz clic en "Añadir más imágenes".</p>
+        {% endfor %}
+    </div>
+
+    {# Opcional: Un botón para añadir dinámicamente más campos de imagen #}
+    <button type="button" id="add-more-images">Añadir más imágenes</button>
+    <br><br>
+
+    <button type="submit">Guardar Venta</button>
+</form>
+
+{# Script para añadir más campos de imagen dinámicamente #}
+{# Esto es JavaScript para mejorar la usabilidad, no es estrictamente necesario para que funcione el formset #}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addMoreImagesBtn = document.getElementById('add-more-images');
+        const imageFormsetContainer = document.getElementById('image-formset-container');
+        const totalForms = document.querySelector('input[name="{{ formset.prefix }}-TOTAL_FORMS"]');
+
+        // Solo clonar si hay al menos un formulario ya renderizado para usar como template
+        let templateForm = null;
+        const existingForms = imageFormsetContainer.querySelector('.image-formset-row');
+        if (existingForms) {
+            templateForm = existingForms.cloneNode(true);
+            templateForm.querySelectorAll('input').forEach(input => input.value = ''); // Limpiar valores
+            templateForm.querySelectorAll('label').forEach(label => label.innerText = ''); // Limpiar labels
+            const hrElement = templateForm.querySelector('hr');
+            if (hrElement) {
+                hrElement.remove(); // Remover la línea divisoria del template
+            }
+             // Eliminar el checkbox de DELETE del template para nuevas filas
+            const deleteCheckboxParent = templateForm.querySelector('p:has(input[type="checkbox"])');
+            if (deleteCheckboxParent) {
+                deleteCheckboxParent.remove();
+            }
+        } else {
+            // Si no hay formularios existentes (ej. extra=0), crea un template básico
+            // Esto es más complejo y a menudo se simplifica en producción con una plantilla de JS en el HTML
+            // Por ahora, asumimos que 'extra' es > 0, o que el usuario entenderá que debe hacer clic.
+            console.warn("No .image-formset-row found to clone. Dynamic 'add more' might not work as expected.");
+        }
+
+
+        addMoreImagesBtn.addEventListener('click', function() {
+            if (!templateForm) {
+                alert("No se pudo añadir más campos de imagen. Recarga la página y asegúrate de que el formset tenga 'extra' > 0.");
+                return;
+            }
+
+            const currentTotalForms = parseInt(totalForms.value);
+            const newForm = templateForm.cloneNode(true);
+
+            // Actualizar IDs y Nombres para el nuevo formulario
+            newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, currentTotalForms);
+            newForm.querySelectorAll('input, select, textarea, label').forEach(element => {
+                if (element.id) {
+                    element.id = element.id.replace('__prefix__', currentTotalForms);
+                }
+                if (element.name) {
+                    element.name = element.name.replace('__prefix__', currentTotalForms);
+                }
+                if (element.htmlFor) {
+                    element.htmlFor = element.htmlFor.replace('__prefix__', currentTotalForms);
+                }
+                // Restablecer etiquetas a su valor original
+                if (element.tagName === 'LABEL') {
+                    if (element.htmlFor.includes('-imagen')) {
+                        element.innerText = 'Imagen:'; 
+                    } else if (element.htmlFor.includes('-descripcion')) {
+                        element.innerText = 'Descripción:'; 
+                    } else if (element.htmlFor.includes('-orden')) {
+                        element.innerText = 'Orden:'; 
+                    }
+                }
+            });
+
+            imageFormsetContainer.appendChild(newForm);
+            totalForms.value = currentTotalForms + 1;
+        });
+    });
+</script>
+
+<style>
+    /* Estilos básicos para la galería */
+    .image-formset-row {
+        border: 1px solid #ccc;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+    .image-formset-row p {
+        margin-bottom: 5px;
+    }
+    .image-formset-row input[type="file"] {
+        display: block;
+        margin-top: 5px;
+    }
+    .image-formset-row input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        box-sizing: border-box;
+    }
+    .image-formset-row input[type="number"] {
+        width: 50%;
+        padding: 8px;
+        margin-top: 5px;
+        box-sizing: border-box;
+    }
+    #add-more-images {
+        margin-top: 15px;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    #add-more-images:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+{% endblock %}

@@ -1,39 +1,84 @@
 {% extends 'propiedades/base.html' %}
+{% load static %}
+
 
 {% block content %}
-<h2>Buscar Ventas por Dirección, Precio o Corredor</h2>
-<form method="get">
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Buscar</button>
+<h2 class="mb-4">Buscar Propiedades en Venta</h2>
+
+<form method="get" class="mb-4 p-4 bg-light rounded shadow-sm">
+    {# Usamos row y col para un layout más ordenado de los campos del formulario #}
+    <div class="row g-3">
+        <div class="col-md-6">
+            {{ form.direccion.label_tag }}
+            {{ form.direccion }}
+        </div>
+        <div class="col-md-3">
+            {{ form.precio_min.label_tag }}
+            {{ form.precio_min }}
+        </div>
+        <div class="col-md-3">
+            {{ form.precio_max.label_tag }}
+            {{ form.precio_max }}
+        </div>
+        <div class="col-12">
+            {{ form.corredor.label_tag }}
+            {{ form.corredor }}
+        </div>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        {# Botón para limpiar la búsqueda si se ha realizado una #}
+        {% if busqueda_realizada %}
+            <a href="{% url 'buscar_venta' %}" class="btn btn-outline-secondary">Limpiar Búsqueda</a>
+        {% endif %}
+    </div>
 </form>
 
-<h3>Resultados:</h3>
-{% if request.GET %}
-    {% if ventas|length > 0 %}
-        <ul class="list-unstyled">
-            {% for venta in ventas %}
-                <li class="mb-3 p-3 border rounded">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <h5 class="mb-1"><span class="font-weight-bold text-primary">{{ venta.direccion }}</span> - <span class="font-weight-bold">${{ venta.precio }}</span></h5>
-                            {% if busqueda_realizada %}
-                                <div class="mt-2 ml-3">
-                                    <p class="mb-0"><span class="font-weight-bold">Corredor:</span> <span class="text-success">{{ venta.Corredor.nombre }}</span></p>
-                                    <p class="mb-0"><span class="font-weight-bold">Teléfono:</span> {{ venta.Corredor.telefono }}</p>
-                                    <p class="mb-0"><span class="font-weight-bold">Correo:</span> {{ venta.Corredor.correo }}</p>
-                                </div>
+<h3 class="mt-4 mb-3">Propiedades en venta Disponibles</h3>
+
+{% if ventas %}
+    <div class="row row-cols-1 g-3"> {# Usamos un grid para las propiedades, una por fila en pantallas pequeñas #}
+        {% for venta in ventas %}
+            <div class="col">
+                <div class="card mb-3 p-3 border rounded shadow-sm">
+                    <div class="row g-0 align-items-center"> {# Usamos grid dentro de la tarjeta para imagen y texto #}
+                        <div class="col-md-4">
+                            {% if venta.imagen_principal %}
+                                <a href="{% url 'detalle_venta' pk=venta.pk %}">
+                                    <img src="{{ venta.imagen_principal.url }}" class="img-fluid rounded-start" alt="Imagen principal de {{ venta.direccion }}" style="height: 150px; object-fit: cover; width: 100%;">
+                                </a>
+                            {% else %}
+                                {# Imagen por defecto si no hay imagen principal #}
+                                <a href="{% url 'detalle_venta' pk=venta.pk %}">
+                                    <img src="{% static 'propiedades/no_image.png' %}" class="img-fluid rounded-start" alt="No hay imagen" style="height: 150px; object-fit: cover; width: 100%;">
+                                </a>
                             {% endif %}
                         </div>
+                        <div class="col-md-8">
+                            <div class="card-body py-0 py-md-2"> {# Ajuste de padding para el body en pantallas pequeñas #}
+                                <h5 class="card-title mb-1">
+                                    <a href="{% url 'detalle_venta' pk=venta.pk %}" class="text-primary text-decoration-none">
+                                        {{ venta.direccion }}
+                                    </a>
+                                </h5>
+                                <p class="card-text mb-1"><strong>Precio:</strong> <span class="text-success">${{ venta.precio|floatformat:0 }}</span></p>
+                                <p class="card-text mb-1"><strong>Corredor:</strong> {{ venta.Corredor.nombre }}</p>
+                                <p class="card-text mb-1"><strong>Teléfono:</strong> {{ venta.Corredor.telefono }}</p>
+                                <p class="card-text mb-1"><strong>Correo:</strong> {{ venta.Corredor.correo }}</p>
+                                <a href="{% url 'detalle_venta' pk=venta.pk %}" class="btn btn-sm btn-outline-primary mt-2">Ver Detalles</a>
+                            </div>
+                        </div>
                     </div>
-                </li>
-            {% empty %}
-                <li class="list-group-item">No se encontraron propiedades con los parámetros solicitados.</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No se encontraron propiedades con los parámetros solicitados.</p>
-    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 {% else %}
-    <p>Mostrando todas las propiedades disponibles. Utilice el formulario para filtrar.</p>
+    {# Mensaje condicional dependiendo si se hizo una búsqueda o no #}
+    {% if busqueda_realizada %}
+        <p class="alert alert-info">No se encontraron propiedades con los criterios de búsqueda.</p>
+    {% else %}
+        <p class="alert alert-warning">No hay propiedades en venta disponibles en este momento.</p>
+    {% endif %}
 {% endif %}
 {% endblock %}

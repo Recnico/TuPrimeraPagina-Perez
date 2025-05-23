@@ -1,8 +1,10 @@
 from django import forms
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth import get_user_model
-from .models import Corredor, Venta, Arriendo
+from .models import Corredor, Venta, Arriendo , Imagen
 from .models import Avatar
+from django.contrib.contenttypes.forms import generic_inlineformset_factory 
+from django.forms.widgets import ClearableFileInput
 
 class CorredorForm(forms.ModelForm):
     class Meta:
@@ -49,3 +51,18 @@ class AvatarForm(forms.ModelForm):
     class Meta:
         model = Avatar
         fields = ['imagen']
+
+class ImagenForm(forms.ModelForm):
+    imagen = forms.ImageField(widget=ClearableFileInput) # 
+    class Meta:
+        model = Imagen
+        fields = ['imagen', 'descripcion', 'orden'] 
+
+
+ImagenFormSet = generic_inlineformset_factory(
+    Imagen,         # ¡Aquí el modelo hijo es el primer argumento!
+    form=ImagenForm,
+    extra=3,
+    can_delete=True,
+    fields=['imagen', 'descripcion', 'orden']
+)

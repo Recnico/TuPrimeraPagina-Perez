@@ -1,12 +1,15 @@
-from django.shortcuts import render, redirect
-from .forms import CorredorForm, ArriendoForm, VentaForm, VentaSearchForm , EditProfileForm , AvatarForm
-from .models import Venta , Avatar
+# propiedades/views.py
+
+from django.shortcuts import render, redirect, get_object_or_404 # Agregamos get_object_or_404
+from .forms import CorredorForm, ArriendoForm, VentaForm, VentaSearchForm , EditProfileForm , AvatarForm, ImagenFormSet # Importa ImagenFormSet
+from .models import Venta , Avatar, Imagen # Asegúrate de importar Imagen
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from django.db import transaction # Para asegurar que todo se guarde o nada
 
 def home(request):
     return render(request, 'propiedades/home.html')
@@ -16,6 +19,7 @@ def agregar_corredor(request):
         form = CorredorForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Corredor agregado correctamente.') # Mensaje de éxito
             return redirect('home')
     else:
         form = CorredorForm()
@@ -26,25 +30,83 @@ def agregar_arriendo(request):
         form = ArriendoForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Arriendo agregado correctamente.') # Mensaje de éxito
             return redirect('home')
     else:
         form = ArriendoForm()
     return render(request, 'propiedades/form_template.html', {'form': form, 'titulo': 'Agregar Arriendo'})
 
+
 def agregar_venta(request):
     if request.method == 'POST':
-        form = VentaForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('home')
-    else:
-        form = VentaForm()
-    return render(request, 'propiedades/form_template.html', {'form': form, 'titulo': 'Agregar Venta'})
+        venta_form = VentaForm(request.POST, request.FILES) # Pasa request.FILES para imagen_principal
+        
+        # Primero, intenta validar el formulario de Venta.
+        if venta_form.is_valid():
+            # No guardamos la venta todavía (commit=False) porque necesitamos su instancia
+            # para el formset de imágenes, pero aún no tiene un PK si es nueva.
+            # La guardaremos dentro de la transacción atómica si todo lo demás es válido.
+            venta_instance = venta_form.save(commit=False)
+            
+            # Instancia el formset con los datos POST y FILES, y lo más importante:
+            # Pasa la instancia de la Venta como 'instance' al formset.
+            # Esto es crucial para que generic_inlineformset_factory sepa a qué objeto relacionar las imágenes.
+            formset = ImagenFormSet(request.POST, request.FILES, instance=venta_instance) 
+
+            # Ahora, valida el formset.
+            if formset.is_valid():
+                # Si ambos formularios son válidos, procedemos a guardar en una transacción atómica.
+                with transaction.atomic():
+                    venta_instance.save() # Guarda la instancia de Venta (ahora tiene un PK)
+
+                    # El método save() del generic_inlineformset_factory:
+                    # 1. Asigna automáticamente content_type y object_id (el PK de venta_instance) a cada imagen.
+                    # 2. Guarda las nuevas imágenes.
+                    # 3. Actualiza las imágenes existentes.
+                    # 4. Elimina las imágenes marcadas para eliminación.
+                    formset.save() # Guarda las imágenes de la galería
+
+                messages.success(request, '¡Venta y galería de imágenes agregadas correctamente!')
+                return redirect('detalle_venta', pk=venta_instance.pk)
+            else:
+                # Si el formset NO es válido, se mostrarán los errores del formset.
+                messages.error(request, 'Hubo errores en las imágenes de la galería. Por favor, revisa los datos.')
+        else:
+            # Si el formulario de Venta NO es válido, se mostrarán sus errores.
+            messages.error(request, 'Hubo errores en los datos de la venta. Por favor, revisa los datos.')
+        
+        # Si llegamos aquí (algún formulario no fue válido en el POST),
+        # re-instanciamos los formularios con los datos POST y FILES
+        # para que se muestren los errores en la plantilla.
+        # Es importante re-instanciar el formset con la instancia de venta_instance,
+        # incluso si la venta no fue válida, para que los errores se muestren correctamente.
+        if 'venta_instance' not in locals(): # Si venta_instance no se creó (ej. venta_form no válido)
+             venta_instance = None # O podrías intentar obtenerla si es una edición
+        formset = ImagenFormSet(request.POST, request.FILES, instance=venta_instance)
+
+
+    else: # GET request (cuando el usuario accede a la página por primera vez)
+        venta_form = VentaForm()
+        formset = ImagenFormSet() # Crea un formset vacío para nuevas imágenes
+
+    # Renderiza la plantilla con los formularios (vacíos en GET, o con datos y errores en POST si no fue válido)
+    return render(request, 'propiedades/agregar_venta.html', { 
+        'venta_form': venta_form,
+        'formset': formset,
+        'titulo': 'Agregar Venta con Galería',
+    })
+
+# Nueva vista para ver los detalles de una Venta
+def detalle_venta(request, pk):
+    venta = get_object_or_404(Venta, pk=pk)
+    # Las imágenes de la galería se obtienen con venta.get_gallery_images()
+    return render(request, 'propiedades/detalle_venta.html', {'venta': venta})
+
 
 def buscar_venta(request):
     form = VentaSearchForm(request.GET or None)
     ventas = Venta.objects.all()
-    busqueda_realizada = False  # Nueva bandera
+    busqueda_realizada = False 
 
     if form.is_valid():
         busqueda_realizada = True
@@ -102,11 +164,9 @@ def editarPerfil(request):
 
     else:
         form = EditProfileForm(instance=request.user)
-        # password_form = PasswordChangeForm(request.user) # No necesario aquí
-        avatar_form = AvatarForm(instance=avatar_instance) # Para mostrar el avatar actual si existe
+        avatar_form = AvatarForm(instance=avatar_instance)
 
     return render(request, 'propiedades/editarPerfil.html', {
         'form': form,
-        # 'password_form': password_form, # Ya no se pasa este formulario
-        'avatar_form': avatar_form, # Pasamos el formulario del avatar a la plantilla
+        'avatar_form': avatar_form,
     })

@@ -1,0 +1,65 @@
+{# propiedades/templates/propiedades/detalle_venta.html #}
+
+{% extends 'propiedades/base.html' %}
+
+{% block content %}
+<div class="venta-detail">
+    <h2>Detalles de la Propiedad: {{ venta.direccion }}</h2>
+    <p><strong>Precio:</strong> ${{ venta.precio|floatformat:0 }}</p> {# Formato de precio sin decimales #}
+    <p><strong>Corredor:</strong> {{ venta.Corredor.nombre }} (Tel: {{ venta.Corredor.telefono }})</p>
+
+    {% if venta.imagen_principal %}
+        <h3>Imagen Principal</h3>
+        <img src="{{ venta.imagen_principal.url }}" alt="Imagen principal de {{ venta.direccion }}" style="max-width: 500px; height: auto; display: block; margin-bottom: 20px;">
+    {% else %}
+        <p>No hay imagen principal disponible.</p>
+    {% endif %}
+
+    <h3>Galería de Imágenes</h3>
+    {% if venta.get_gallery_images %}
+        <div class="image-gallery">
+            {% for imagen in venta.get_gallery_images %}
+                <div class="gallery-item">
+                    <img src="{{ imagen.imagen.url }}" alt="{{ imagen.descripcion|default:'Imagen de la propiedad' }}">
+                    {% if imagen.descripcion %}
+                        <p class="image-description">{{ imagen.descripcion }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No hay imágenes adicionales en la galería.</p>
+    {% endif %}
+
+    <p><a href="{% url 'buscar_venta' %}">Volver a la búsqueda de ventas</a></p>
+</div>
+
+<style>
+    /* Estilos básicos para la galería */
+    .image-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Columnas responsivas */
+        gap: 15px;
+        margin-top: 20px;
+    }
+    .gallery-item {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    .gallery-item img {
+        max-width: 100%;
+        height: 200px; /* Altura fija para las imágenes de la galería */
+        object-fit: cover; /* Ajusta la imagen sin distorsionarla */
+        display: block;
+        margin: 0 auto;
+    }
+    .image-description {
+        padding: 10px;
+        font-size: 0.9em;
+        color: #555;
+    }
+</style>
+{% endblock %}
