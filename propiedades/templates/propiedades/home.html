@@ -34,6 +34,7 @@
           <div class="carousel-caption d-none d-md-block">
             <h5>Oportunidad: Terreno en Desarrollo, Colina</h5>
             <p>Invierte en un sector con alta plusvalía.</p>
+            <p>Este es un texto de prueba para la vista de arriendo</p>
             <a href="{% url 'buscar_venta' %}" class="btn btn-primary">Ver Detalles</a>
           </div>
         </div>
@@ -116,4 +117,43 @@
     {# Puedes añadir más secciones aquí si las tenías después de las propiedades destacadas #}
 
   </div>
+
+    {# WhatsApp Floating Button - Colocado dentro de block content #}
+    <a href="https://wa.me/56973084594?text=Hola%2C%20estoy%20interesado%20en%20una%20propiedad%20que%20vi%20en%20su%20web." target="_blank" class="whatsapp-float">
+        <img src="{% static 'propiedades/img/whatsapp_logo.jpg' %}" alt="WhatsApp">
+    </a>
+
 {% endblock %}
+
+{% block extra_css %}
+{# Este es el ÚNICO block extra_css #}
+<style>
+    .whatsapp-float {
+        position: fixed;
+        bottom: 20px; /* Distancia desde abajo */
+        right: 20px; /* Distancia desde la derecha */
+        width: 60px; /* Ancho del botón */
+        height: 60px; /* Alto del botón */
+        background-color: #25d366; /* Color de fondo de WhatsApp */
+        color: white;
+        border-radius: 50%; /* Hace que sea un círculo */
+        text-align: center;
+        font-size: 30px;
+        box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+        z-index: 1000; /* Asegura que esté por encima de otros elementos */
+        display: flex; /* Para centrar la imagen */
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.3s ease; /* Transición suave para el hover */
+    }
+
+    .whatsapp-float img {
+        width: 35px; /* Tamaño del logo dentro del círculo */
+        height: 35px;
+    }
+
+    .whatsapp-float:hover {
+        background-color: #1DA851; /* Un tono más oscuro al pasar el ratón */
+    }
+</style>
+{% endblock extra_css %}.

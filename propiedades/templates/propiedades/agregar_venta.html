@@ -12,97 +12,73 @@
     {{ venta_form.as_p }} {# Renderiza los campos del formulario de Venta #}
 
     <h3>Galería de Imágenes</h3>
-    {{ formset.management_form }} {# ESTO ES CRUCIAL PARA LOS FORMSETS #}
 
-    <div id="image-formset-container">
-        {% for form in formset %}
-            <div class="image-formset-row">
-                {# Muestra los campos del formulario de imagen #}
-                {{ form.as_p }}
-                {# Si can_delete=True en el formset, esto añade el checkbox de eliminación #}
-                {% if form.instance.pk %}<p>{{ form.DELETE }} Eliminar esta imagen</p>{% endif %}
-                <hr>
+    {# Muestra las imágenes existentes y permite eliminarlas/editarlas con el formset #}
+    {% if is_edit and formset %} {# Solo si estamos editando y hay un formset #}
+        {{ formset.management_form }} {# ESTO ES CRUCIAL PARA LOS FORMSETS #}
+        <div id="image-formset-container">
+            {% for form in formset %}
+                <div class="image-formset-row">
+                    {# Muestra los campos del formulario de imagen #}
+                    {{ form.as_p }}
+                    {# Si can_delete=True en el formset, esto añade el checkbox de eliminación #}
+                    {% if form.instance.pk %}<p>{{ form.DELETE }} Eliminar esta imagen</p>{% endif %}
+                    <hr>
+                </div>
+            {% endfor %}
+            <p>Puedes eliminar imágenes existentes marcando la casilla "Eliminar esta imagen".</p>
+            <p>Para añadir más imágenes, usa el campo "Añadir nuevas imágenes" a continuación.</p>
+        </div>
+        <br>
+    {% endif %}
+
+    {# NUEVO: Campo para subir múltiples imágenes a la vez #}
+    <h4>Añadir nuevas imágenes (selección múltiple)</h4>
+    <div id="multi-image-upload-container">
+        <input type="file" id="multi-image-selector" name="gallery_images" multiple accept="image/*">
+        <small class="form-text text-muted">Selecciona una o varias imágenes nuevas.</small>
+        <div id="image-previews" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px;">
             </div>
-        {% empty %} {# Si no hay formularios en el formset (primera carga y extra=0) #}
-            <p>No hay campos de imagen disponibles. Haz clic en "Añadir más imágenes".</p>
-        {% endfor %}
     </div>
-
-    {# Opcional: Un botón para añadir dinámicamente más campos de imagen #}
-    <button type="button" id="add-more-images">Añadir más imágenes</button>
-    <br><br>
+    <br>
 
     <button type="submit">Guardar Venta</button>
 </form>
 
-{# Script para añadir más campos de imagen dinámicamente #}
-{# Esto es JavaScript para mejorar la usabilidad, no es estrictamente necesario para que funcione el formset #}
+{# Script para previsualizar las imágenes seleccionadas #}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const addMoreImagesBtn = document.getElementById('add-more-images');
-        const imageFormsetContainer = document.getElementById('image-formset-container');
-        const totalForms = document.querySelector('input[name="{{ formset.prefix }}-TOTAL_FORMS"]');
+        const multiImageSelector = document.getElementById('multi-image-selector');
+        const imagePreviews = document.getElementById('image-previews');
 
-        // Solo clonar si hay al menos un formulario ya renderizado para usar como template
-        let templateForm = null;
-        const existingForms = imageFormsetContainer.querySelector('.image-formset-row');
-        if (existingForms) {
-            templateForm = existingForms.cloneNode(true);
-            templateForm.querySelectorAll('input').forEach(input => input.value = ''); // Limpiar valores
-            templateForm.querySelectorAll('label').forEach(label => label.innerText = ''); // Limpiar labels
-            const hrElement = templateForm.querySelector('hr');
-            if (hrElement) {
-                hrElement.remove(); // Remover la línea divisoria del template
-            }
-             // Eliminar el checkbox de DELETE del template para nuevas filas
-            const deleteCheckboxParent = templateForm.querySelector('p:has(input[type="checkbox"])');
-            if (deleteCheckboxParent) {
-                deleteCheckboxParent.remove();
-            }
-        } else {
-            // Si no hay formularios existentes (ej. extra=0), crea un template básico
-            // Esto es más complejo y a menudo se simplifica en producción con una plantilla de JS en el HTML
-            // Por ahora, asumimos que 'extra' es > 0, o que el usuario entenderá que debe hacer clic.
-            console.warn("No .image-formset-row found to clone. Dynamic 'add more' might not work as expected.");
-        }
+        if (multiImageSelector) { // Asegurarse de que el elemento existe
+            multiImageSelector.addEventListener('change', function() {
+                imagePreviews.innerHTML = ''; // Limpiar previsualizaciones anteriores
+                if (this.files && this.files.length > 0) {
+                    Array.from(this.files).forEach(file => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const imgContainer = document.createElement('div');
+                            imgContainer.style.position = 'relative';
+                            imgContainer.style.width = '100px';
+                            imgContainer.style.height = '100px';
+                            imgContainer.style.overflow = 'hidden';
+                            imgContainer.style.border = '1px solid #ddd';
 
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
 
-        addMoreImagesBtn.addEventListener('click', function() {
-            if (!templateForm) {
-                alert("No se pudo añadir más campos de imagen. Recarga la página y asegúrate de que el formset tenga 'extra' > 0.");
-                return;
-            }
-
-            const currentTotalForms = parseInt(totalForms.value);
-            const newForm = templateForm.cloneNode(true);
-
-            // Actualizar IDs y Nombres para el nuevo formulario
-            newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, currentTotalForms);
-            newForm.querySelectorAll('input, select, textarea, label').forEach(element => {
-                if (element.id) {
-                    element.id = element.id.replace('__prefix__', currentTotalForms);
-                }
-                if (element.name) {
-                    element.name = element.name.replace('__prefix__', currentTotalForms);
-                }
-                if (element.htmlFor) {
-                    element.htmlFor = element.htmlFor.replace('__prefix__', currentTotalForms);
-                }
-                // Restablecer etiquetas a su valor original
-                if (element.tagName === 'LABEL') {
-                    if (element.htmlFor.includes('-imagen')) {
-                        element.innerText = 'Imagen:'; 
-                    } else if (element.htmlFor.includes('-descripcion')) {
-                        element.innerText = 'Descripción:'; 
-                    } else if (element.htmlFor.includes('-orden')) {
-                        element.innerText = 'Orden:'; 
-                    }
+                            imgContainer.appendChild(img);
+                            imagePreviews.appendChild(imgContainer);
+                        };
+                        reader.readAsDataURL(file);
+                    });
                 }
             });
-
-            imageFormsetContainer.appendChild(newForm);
-            totalForms.value = currentTotalForms + 1;
-        });
+        }
     });
 </script>
 
@@ -133,7 +109,7 @@
         margin-top: 5px;
         box-sizing: border-box;
     }
-    #add-more-images {
+    #add-more-images { /* Este botón ya no es estrictamente necesario para la carga múltiple */
         margin-top: 15px;
         padding: 10px 20px;
         background-color: #007bff;

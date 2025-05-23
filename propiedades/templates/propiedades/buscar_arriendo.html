@@ -1,0 +1,81 @@
+{% extends 'propiedades/base.html' %}
+{% load static %}
+
+{% block title %}Buscar Arriendos - Chiletop Corretaje de Propiedades{% endblock %} {# Cambia el título de la página #}
+
+{% block content %}
+<h2 class="mb-4">Buscar Propiedades en Arriendo</h2> {# Título principal #}
+
+<form method="get" class="mb-4 p-4 bg-light rounded shadow-sm">
+    <div class="row g-3">
+        <div class="col-md-6">
+            {{ form.direccion.label_tag }}
+            {{ form.direccion }}
+        </div>
+        <div class="col-md-3">
+            {{ form.precio_mensual_min.label_tag }} {# CAMBIADO #}
+            {{ form.precio_mensual_min }} {# CAMBIADO #}
+        </div>
+        <div class="col-md-3">
+            {{ form.precio_mensual_max.label_tag }} {# CAMBIADO #}
+            {{ form.precio_mensual_max }} {# CAMBIADO #}
+        </div>
+        <div class="col-12">
+            {{ form.corredor.label_tag }}
+            {{ form.corredor }}
+        </div>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        {% if busqueda_realizada %}
+            <a href="{% url 'buscar_arriendo' %}" class="btn btn-outline-secondary">Limpiar Búsqueda</a> {# CAMBIADO #}
+        {% endif %}
+    </div>
+</form>
+
+<h3 class="mt-4 mb-3">Propiedades en Arriendo Disponibles</h3> {# Título de la lista #}
+
+{% if arriendos %} {# CAMBIADO #}
+    <div class="row row-cols-1 g-3">
+        {% for arriendo in arriendos %} {# CAMBIADO #}
+            <div class="col">
+                <div class="card mb-3 p-3 border rounded shadow-sm">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-md-4">
+                            {% if arriendo.imagen_principal %} {# CAMBIADO #}
+                                <a href="{% url 'detalle_arriendo' pk=arriendo.pk %}"> {# CAMBIADO #}
+                                    <img src="{{ arriendo.imagen_principal.url }}" class="img-fluid rounded-start" alt="Imagen principal de {{ arriendo.direccion }}" style="height: 150px; object-fit: cover; width: 100%;"> {# CAMBIADO #}
+                                </a>
+                            {% else %}
+                                <a href="{% url 'detalle_arriendo' pk=arriendo.pk %}"> {# CAMBIADO #}
+                                    <img src="{% static 'propiedades/no_image.png' %}" class="img-fluid rounded-start" alt="No hay imagen" style="height: 150px; object-fit: cover; width: 100%;">
+                                </a>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body py-0 py-md-2">
+                                <h5 class="card-title mb-1">
+                                    <a href="{% url 'detalle_arriendo' pk=arriendo.pk %}" class="text-primary text-decoration-none"> {# CAMBIADO #}
+                                        {{ arriendo.direccion }} {# CAMBIADO #}
+                                    </a>
+                                </h5>
+                                <p class="card-text mb-1"><strong>Precio Mensual:</strong> <span class="text-success">${{ arriendo.precio_mensual|floatformat:0 }}</span></p> {# CAMBIADO #}
+                                <p class="card-text mb-1"><strong>Corredor:</strong> {{ arriendo.corredor.nombre }}</p> {# CAMBIADO (asumiendo campo 'corredor' en Arriendo) #}
+                                <p class="card-text mb-1"><strong>Teléfono:</strong> {{ arriendo.corredor.telefono }}</p> {# CAMBIADO #}
+                                <p class="card-text mb-1"><strong>Correo:</strong> {{ arriendo.corredor.correo }}</p> {# CAMBIADO #}
+                                <a href="{% url 'detalle_arriendo' pk=arriendo.pk %}" class="btn btn-sm btn-outline-primary mt-2">Ver Detalles</a> {# CAMBIADO #}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %} {# CAMBIADO #}
+    {% if busqueda_realizada %}
+        <p class="alert alert-info">No se encontraron propiedades de arriendo con los criterios de búsqueda.</p> {# CAMBIADO #}
+    {% else %}
+        <p class="alert alert-warning">No hay propiedades de arriendo disponibles en este momento.</p> {# CAMBIADO #}
+    {% endif %}
+{% endif %}
+{% endblock %}

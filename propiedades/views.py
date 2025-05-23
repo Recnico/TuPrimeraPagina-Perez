@@ -1,21 +1,18 @@
 # propiedades/views.py
 
-from django.shortcuts import render, redirect, get_object_or_404 # Agregamos get_object_or_404
-from .forms import CorredorForm, ArriendoForm, VentaForm, VentaSearchForm , EditProfileForm , AvatarForm, ImagenFormSet # Importa ImagenFormSet
-from .models import Venta , Avatar, Imagen , Arriendo , Corredor
-from django.contrib.auth.forms import UserChangeForm
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import CorredorForm, ArriendoForm, VentaForm, VentaSearchForm, EditProfileForm, AvatarForm, ImagenFormSet
+from .models import Venta, Avatar, Imagen, Arriendo, Corredor
+from django.contrib.auth.forms import UserChangeForm # No parece usarse directamente, pero la importación está bien
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
-from django.db import transaction 
+from django.contrib.auth.forms import PasswordChangeForm # No parece usarse directamente
+from django.contrib.auth import update_session_auth_hash # No parece usarse directamente
+from django.db import transaction
 
 def home(request):
-    
     ventas_destacadas = Venta.objects.filter(destacada=True)[:3]
-
-    
     arriendos_destacados = Arriendo.objects.filter(destacada=True)[:3]
 
     context = {
@@ -30,7 +27,7 @@ def agregar_corredor(request):
         form = CorredorForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Corredor agregado correctamente.') # Mensaje de éxito
+            messages.success(request, 'Corredor agregado correctamente.')
             return redirect('home')
     else:
         form = CorredorForm()
@@ -39,84 +36,118 @@ def agregar_corredor(request):
 @login_required
 def agregar_arriendo(request):
     if request.method == 'POST':
-        form = ArriendoForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Arriendo agregado correctamente.') # Mensaje de éxito
-            return redirect('home')
-    else:
-        form = ArriendoForm()
-    return render(request, 'propiedades/form_template.html', {'form': form, 'titulo': 'Agregar Arriendo'})
+        # arriendo_form para los campos del arriendo
+        arriendo_form = ArriendoForm(request.POST, request.FILES)
+
+        if arriendo_form.is_valid():
+            arriendo_instance = arriendo_form.save(commit=False)
+            arriendo_instance.usuario = request.user # Asigna el usuario logueado
+            
+            with transaction.atomic():
+                arriendo_instance.save() # Guarda la instancia de Arriendo para obtener el PK
+
+                # Lógica para procesar múltiples imágenes para arriendo
+                # Asumiendo que también tienes un input `name="gallery_images"` en agregar_arriendo.html
+                if request.FILES.getlist('gallery_images'):
+                    for uploaded_file in request.FILES.getlist('gallery_images'):
+                        Imagen.objects.create(
+                            content_object=arriendo_instance,
+                            imagen=uploaded_file,
+                            descripcion="" # Puedes dejarla vacía o generar una por defecto
+                        )
+
+                messages.success(request, 'Arriendo y galería de imágenes agregados correctamente.')
+                return redirect('detalle_arriendo', pk=arriendo_instance.pk) # Redirige al detalle del arriendo
+        else:
+            messages.error(request, 'Hubo errores en los datos del arriendo. Por favor, revisa los datos.')
+            
+    else: # GET request
+        arriendo_form = ArriendoForm()
+
+    return render(request, 'propiedades/agregar_arriendo.html', { # Asegúrate de que esta plantilla existe
+        'arriendo_form': arriendo_form,
+        'titulo': 'Agregar Arriendo con Galería',
+        'is_edit': False,
+    })
+
 
 @login_required
 def agregar_venta(request):
     if request.method == 'POST':
-        venta_form = VentaForm(request.POST, request.FILES) # Pasa request.FILES para imagen_principal
+        venta_form = VentaForm(request.POST, request.FILES)
         
-        # Primero, intenta validar el formulario de Venta.
         if venta_form.is_valid():
-            # No guardamos la venta todavía (commit=False) porque necesitamos su instancia
-            # para el formset de imágenes, pero aún no tiene un PK si es nueva.
-            # La guardaremos dentro de la transacción atómica si todo lo demás es válido.
             venta_instance = venta_form.save(commit=False)
-            venta_instance.usuario = request.user
-            # Instancia el formset con los datos POST y FILES, y lo más importante:
-            # Pasa la instancia de la Venta como 'instance' al formset.
-            # Esto es crucial para que generic_inlineformset_factory sepa a qué objeto relacionar las imágenes.
-            formset = ImagenFormSet(request.POST, request.FILES, instance=venta_instance) 
-
-            # Ahora, valida el formset.
-            if formset.is_valid():
-                # Si ambos formularios son válidos, procedemos a guardar en una transacción atómica.
-                with transaction.atomic():
-                    venta_instance.save() # Guarda la instancia de Venta (ahora tiene un PK)
-
-                    # El método save() del generic_inlineformset_factory:
-                    # 1. Asigna automáticamente content_type y object_id (el PK de venta_instance) a cada imagen.
-                    # 2. Guarda las nuevas imágenes.
-                    # 3. Actualiza las imágenes existentes.
-                    # 4. Elimina las imágenes marcadas para eliminación.
-                    formset.save() # Guarda las imágenes de la galería
-
+            venta_instance.usuario = request.user 
+            
+            with transaction.atomic():
+                venta_instance.save() # Guarda la instancia de Venta para obtener el PK
+                
+                # --- NUEVA LÓGICA: Procesa las imágenes subidas por el input 'multiple' ---
+                # 'gallery_images' es el 'name' del input file en el HTML que permite múltiples selecciones
+                if request.FILES.getlist('gallery_images'): 
+                    for uploaded_file in request.FILES.getlist('gallery_images'):
+                        Imagen.objects.create(
+                            content_object=venta_instance, # Asigna la imagen a la venta recién creada
+                            imagen=uploaded_file,
+                            descripcion="" # Puedes dejarla vacía o generar una por defecto
+                        )
+                # --- FIN NUEVA LÓGICA ---
+                
                 messages.success(request, '¡Venta y galería de imágenes agregadas correctamente!')
                 return redirect('detalle_venta', pk=venta_instance.pk)
-            else:
-                # Si el formset NO es válido, se mostrarán los errores del formset.
-                messages.error(request, 'Hubo errores en las imágenes de la galería. Por favor, revisa los datos.')
         else:
-            # Si el formulario de Venta NO es válido, se mostrarán sus errores.
             messages.error(request, 'Hubo errores en los datos de la venta. Por favor, revisa los datos.')
-        
-        # Si llegamos aquí (algún formulario no fue válido en el POST),
-        # re-instanciamos los formularios con los datos POST y FILES
-        # para que se muestren los errores en la plantilla.
-        # Es importante re-instanciar el formset con la instancia de venta_instance,
-        # incluso si la venta no fue válida, para que los errores se muestren correctamente.
-        if 'venta_instance' not in locals(): # Si venta_instance no se creó (ej. venta_form no válido)
-             venta_instance = None # O podrías intentar obtenerla si es una edición
-        formset = ImagenFormSet(request.POST, request.FILES, instance=venta_instance)
-
-
-    else: # GET request (cuando el usuario accede a la página por primera vez)
+            
+        # Si la venta_form no es válida, re-renderizamos la plantilla con los errores.
+        # No hay necesidad de instanciar formset para las nuevas imágenes aquí.
+        # El formset solo se usa para imágenes ya existentes en la edición.
+    else: # GET request (cuando se carga la página por primera vez)
         venta_form = VentaForm()
-        formset = ImagenFormSet() # Crea un formset vacío para nuevas imágenes
-
-    # Renderiza la plantilla con los formularios (vacíos en GET, o con datos y errores en POST si no fue válido)
+        # En la vista de agregar, no pasamos el formset para la carga inicial de imágenes.
+        # El formset se usará solo en la vista de edición para mostrar/eliminar imágenes existentes.
+        
     return render(request, 'propiedades/agregar_venta.html', { 
         'venta_form': venta_form,
-        'formset': formset,
+        # 'formset': formset, # Ya no se pasa el formset para AGREGAR
         'titulo': 'Agregar Venta con Galería',
+        'is_edit': False, # Indica a la plantilla que no estamos en modo edición
     })
 
 # Nueva vista para ver los detalles de una Venta
 def detalle_venta(request, pk):
     venta = get_object_or_404(Venta, pk=pk)
-    # Las imágenes de la galería se obtienen con venta.get_gallery_images()
     return render(request, 'propiedades/detalle_venta.html', {'venta': venta})
 
 def detalle_arriendo(request, pk):
     arriendo = get_object_or_404(Arriendo, pk=pk)
     return render(request, 'propiedades/detalle_arriendo.html', {'arriendo': arriendo})
+def buscar_arriendo(request):
+    # Aquí puedes crear un formulario de búsqueda para arriendos, similar a VentaSearchForm
+    # Si no tienes uno, puedes dejarlo simple por ahora.
+    
+    # Supongamos que tienes un ArriendoSearchForm en forms.py, si no, puedes crear uno básico
+    # from .forms import ArriendoSearchForm # Descomentar si lo creas
+    
+    # form = ArriendoSearchForm(request.GET or None) # Descomentar y usar tu form de búsqueda
+    arriendos = Arriendo.objects.all() # Obtener todos los arriendos inicialmente
+    busqueda_realizada = False
+
+    # if form.is_valid(): # Si usas un formulario de búsqueda
+    #     busqueda_realizada = True
+    #     # Aquí iría la lógica para filtrar los arriendos según los parámetros del formulario
+    #     # Ejemplo:
+    #     # direccion = form.cleaned_data.get('direccion')
+    #     # if direccion:
+    #     #     arriendos = arriendos.filter(direccion__icontains=direccion)
+    #     # ... y otros filtros como precio, habitaciones, etc.
+    
+    context = {
+        # 'form': form, # Si usas un formulario de búsqueda
+        'arriendos': arriendos,
+        'busqueda_realizada': busqueda_realizada,
+    }
+    return render(request, 'propiedades/buscar_arriendo.html', context)
 
 
 def buscar_venta(request):
@@ -155,7 +186,7 @@ def editarPerfil(request):
 
     if request.method == 'POST':
         form = EditProfileForm(request.POST, instance=request.user)
-    
+        
         avatar_form = AvatarForm(request.POST, request.FILES, instance=avatar_instance)
 
         profile_updated = False
@@ -198,26 +229,42 @@ def editar_venta(request, pk):
 
     if request.method == 'POST':
         venta_form = VentaForm(request.POST, request.FILES, instance=venta)
+        # Aquí SÍ usamos el formset para gestionar las imágenes EXISTENTES (editar descripción, orden, eliminar)
         formset = ImagenFormSet(request.POST, request.FILES, instance=venta)
 
         if venta_form.is_valid() and formset.is_valid():
             with transaction.atomic():
-                venta_form.save()
-                formset.save()
+                venta_form.save() # Guarda los cambios en la Venta
+
+                # Guarda los cambios y eliminaciones del formset para imágenes existentes
+                formset.save() 
+
+                # --- NUEVA LÓGICA: Procesa nuevas imágenes subidas durante la edición (campo 'gallery_images') ---
+                if request.FILES.getlist('gallery_images'): 
+                    for uploaded_file in request.FILES.getlist('gallery_images'):
+                        Imagen.objects.create(
+                            content_object=venta, # Asigna la imagen a la venta que se está editando
+                            imagen=uploaded_file,
+                            descripcion="" 
+                        )
+                # --- FIN NUEVA LÓGICA ---
+            
             messages.success(request, 'Venta y galería de imágenes actualizadas correctamente.')
             return redirect('detalle_venta', pk=venta.pk)
         else:
             messages.error(request, 'Hubo errores al actualizar la venta. Por favor, revisa los datos.')
-    else:
+    else: # GET request (cuando se carga la página de edición)
         venta_form = VentaForm(instance=venta)
-        formset = ImagenFormSet(instance=venta)
+        # Pasa el formset para que se muestren las imágenes existentes para editar/eliminar
+        formset = ImagenFormSet(instance=venta) 
 
-    return render(request, 'propiedades/agregar_venta.html', { # Reutilizamos la plantilla de agregar
+    return render(request, 'propiedades/agregar_venta.html', { # Reutilizamos la plantilla
         'venta_form': venta_form,
-        'formset': formset,
+        'formset': formset, # Pasa el formset para que se muestren las imágenes existentes
         'titulo': 'Editar Venta',
-        'is_edit': True, # Para lógica condicional en la plantilla
+        'is_edit': True, # Indica a la plantilla que estamos en modo edición
     })
+
 @login_required
 def editar_arriendo(request, pk):
     arriendo = get_object_or_404(Arriendo, pk=pk)
@@ -234,6 +281,17 @@ def editar_arriendo(request, pk):
             with transaction.atomic():
                 arriendo_form.save()
                 formset.save()
+
+                # --- NUEVA LÓGICA: Procesa nuevas imágenes subidas durante la edición de arriendo ---
+                if request.FILES.getlist('gallery_images'):
+                    for uploaded_file in request.FILES.getlist('gallery_images'):
+                        Imagen.objects.create(
+                            content_object=arriendo,
+                            imagen=uploaded_file,
+                            descripcion=""
+                        )
+                # --- FIN NUEVA LÓGICA ---
+
             messages.success(request, 'Propiedad de arriendo y galería de imágenes actualizadas correctamente.')
             return redirect('detalle_arriendo', pk=arriendo.pk)
         else:
