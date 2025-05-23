@@ -1,0 +1,115 @@
+{# propiedades/templates/propiedades/agregar_arriendo.html #}
+
+{% extends 'propiedades/base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if is_edit %}
+        Editar Arriendo
+    {% else %}
+        Agregar Arriendo
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card p-4 shadow-lg border-0">
+        <h2 class="mb-4 text-center">
+            {% if is_edit %}
+                Editar Propiedad de Arriendo
+            {% else %}
+                Agregar Nueva Propiedad de Arriendo
+            {% endif %}
+        </h2>
+
+        {# ... (Tu código existente para mostrar mensajes de Django) ... #}
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
+
+            {# Formulario de Arriendo #}
+            <fieldset class="form-group mb-4 p-3 border rounded">
+                <legend class="border-bottom pb-2 mb-3">Detalles del Arriendo</legend>
+                {% for field in arriendo_form %} {# Asegúrate que sea 'arriendo_form' #}
+                    <div class="mb-3">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </fieldset>
+
+            {# Formulario para Imágenes de la Galería #}
+            <fieldset class="form-group mb-4 p-3 border rounded">
+                <legend class="border-bottom pb-2 mb-3">Galería de Imágenes</legend>
+                {{ formset.management_form }} {# NECESARIO para formsets #}
+                {% for form in formset %}
+                    <div class="card mb-3 p-3">
+                        {% for hidden_field in form.hidden_fields %}
+                            {{ hidden_field }}
+                        {% endfor %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.imagen.id_for_label }}" class="form-label">Imagen:</label>
+                                {{ form.imagen }}
+                                {% if form.instance.imagen %}
+                                    <small class="form-text text-muted">Imagen actual: <a href="{{ form.instance.imagen.url }}" target="_blank">{{ form.instance.imagen.name|truncatechars:30 }}</a></small><br>
+                                {% endif %}
+                                {% for error in form.imagen.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.descripcion.id_for_label }}" class="form-label">Descripción:</label>
+                                {{ form.descripcion }}
+                                {% for error in form.descripcion.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    {{ form.DELETE }}
+                                    <label class="form-check-label" for="{{ form.DELETE.id_for_label }}">
+                                        Eliminar imagen
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger mt-2">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <small class="form-text text-muted">Puedes agregar hasta 3 imágenes adicionales.</small>
+            </fieldset>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+                {% if is_edit %}
+                    Actualizar Arriendo
+                {% else %}
+                    Guardar Arriendo
+                {% endif %}
+            </button>
+            <a href="{% url 'home' %}" class="btn btn-secondary btn-lg w-100 mt-2">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{# propiedades/templates/propiedades/detalle_arriendo.html #}
+
+{% extends 'propiedades/base.html' %}
+{% load static %} {# Asegúrate de cargar static si es necesario #}
+
+{% block content %}
+<div class="arriendo-detail">
+    <h2>Detalles de la Propiedad en Arriendo: {{ arriendo.direccion }}</h2>
+    <p><strong>Precio Mensual:</strong> ${{ arriendo.precio_mensual|floatformat:0 }}</p>
+    <p><strong>Descripción:</strong> {{ arriendo.descripcion|default:"No hay descripción disponible." }}</p>
+    <p><strong>Corredor:</strong> {{ arriendo.Corredor.nombre }} (Tel: {{ arriendo.Corredor.telefono }})</p>
+
+    {# Información del usuario que publicó (NUEVO) #}
+    <p>
+        <strong>Publicado por:</strong>
+        {% if arriendo.usuario %}
+            {{ arriendo.usuario.username }}
+        {% else %}
+            Usuario desconocido
+        {% endif %}
+    </p>
+
+    {% if arriendo.imagen_principal %}
+        <h3>Imagen Principal</h3>
+        <img src="{{ arriendo.imagen_principal.url }}" alt="Imagen principal de {{ arriendo.direccion }}" style="max-width: 500px; height: auto; display: block; margin-bottom: 20px;">
+    {% else %}
+        <p>No hay imagen principal disponible.</p>
+    {% endif %}
+
+    {# BOTÓN DE EDICIÓN PARA ARRIENDO (NUEVO) #}
+    {% if user.is_authenticated and (user == arriendo.usuario or user.is_superuser) %}
+        <div class="edit-button-container" style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
+            <a href="{% url 'editar_arriendo' pk=arriendo.pk %}" class="btn-custom-edit">
+                Editar Publicación de Arriendo
+            </a>
+        </div>
+    {% endif %}
+
+    <h3>Galería de Imágenes</h3>
+    {# Asegúrate de que el método get_gallery_images esté implementado en tu modelo Arriendo #}
+    {% if arriendo.get_gallery_images %}
+        <div class="image-gallery">
+            {% for imagen in arriendo.get_gallery_images %}
+                <div class="gallery-item">
+                    <img src="{{ imagen.imagen.url }}" alt="{{ imagen.descripcion|default:'Imagen de la propiedad' }}">
+                    {% if imagen.descripcion %}
+                        <p class="image-description">{{ imagen.descripcion }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No hay imágenes adicionales en la galería.</p>
+    {% endif %}
+
+    <p><a href="{% url 'home' %}">Volver al Inicio</a></p> {# O a una vista de búsqueda de arriendos si la tienes #}
+</div>
+
+<style>
+    /* Puedes copiar los estilos de .image-gallery, .gallery-item, .btn-custom-edit, etc. de detalle_venta.html aquí */
+    .image-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    .gallery-item {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    .gallery-item img {
+        max-width: 100%;
+        height: 200px;
+        object-fit: cover;
+        display: block;
+        margin: 0 auto;
+    }
+    .image-description {
+        padding: 10px;
+        font-size: 0.9em;
+        color: #555;
+    }
+    .btn-custom-edit {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #ffc107;
+        color: #343a40;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+    .btn-custom-edit:hover {
+        background-color: #e0a800;
+    }
+</style>
+{% endblock %}

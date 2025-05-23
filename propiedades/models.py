@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User # Asegúrate de importar User
 import os
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -7,19 +7,17 @@ from django.contrib.contenttypes.models import ContentType
 def avatar_upload_path(instance, filename):
     base_name, ext = os.path.splitext(filename)
     clean_base_name = base_name.split('.')[0] if '.' in base_name else base_name
-
     return f'avatares/{clean_base_name}{ext.lower()}'
 
 def property_image_upload_path(instance, filename):
     return f'galeria_propiedades/{filename}'
-
 
 class Corredor(models.Model):
     nombre = models.CharField(max_length=100)
     telefono = models.CharField(max_length=20)
     correo = models.EmailField()
 
-    class Meta: 
+    class Meta:
         verbose_name = "Corredor"
         verbose_name_plural = "Corredores"
 
@@ -32,11 +30,11 @@ class Venta(models.Model):
     imagen_principal = models.ImageField(upload_to='ventas_pics/', null=True, blank=True)
     Corredor = models.ForeignKey(Corredor, on_delete=models.CASCADE)
     destacada = models.BooleanField(default=False)
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ventas_publicadas')
 
     def __str__(self):
         return self.direccion
-    
-     # Método para obtener las imágenes de la galería usando el modelo Imagen genérico
+
     def get_gallery_images(self):
         return Imagen.objects.filter(content_type=ContentType.objects.get_for_model(self), object_id=self.id)
 
@@ -48,28 +46,28 @@ class Arriendo(models.Model):
     descripcion = models.TextField(blank=True, null=True)
     imagen_principal = models.ImageField(upload_to='arriendos/', blank=True, null=True)
     destacada = models.BooleanField(default=False)
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='arriendos_publicados')
+
 
     def __str__(self):
         return self.direccion
-    
+
     def get_gallery_images(self):
         return Imagen.objects.filter(object_id=self.id, content_type__model='arriendo')
     
 class Imagen(models.Model):
-    # Campos para Generic Foreign Key
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id') # Este campo es solo para facilitar el acceso Python
+    content_object = GenericForeignKey('content_type', 'object_id')
 
-    imagen = models.ImageField(upload_to=property_image_upload_path) # Usamos la función de subida genérica
-    descripcion = models.CharField(max_length=255, blank=True, null=True) # Opcional: Descripción para cada imagen
-    orden = models.PositiveIntegerField(default=0, blank=True, null=True) # Para ordenar las imágenes en la galería
+    imagen = models.ImageField(upload_to=property_image_upload_path)
+    descripcion = models.CharField(max_length=255, blank=True, null=True)
+    orden = models.PositiveIntegerField(default=0, blank=True, null=True)
 
     class Meta:
-        ordering = ['orden'] # Ordenar las imágenes por este campo
+        ordering = ['orden']
 
     def __str__(self):
-        # Asegúrate de que content_object no sea None antes de intentar acceder a sus atributos
         if self.content_object:
             return f"Imagen para {self.content_object} ({self.id})"
         return f"Imagen genérica ({self.id})"

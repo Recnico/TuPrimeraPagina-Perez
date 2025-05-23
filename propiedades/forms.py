@@ -14,12 +14,12 @@ class CorredorForm(forms.ModelForm):
 class VentaForm(forms.ModelForm):
     class Meta:
         model = Venta
-        fields = '__all__'
+        fields = ['direccion', 'precio', 'imagen_principal', 'Corredor', 'destacada']
 
 class ArriendoForm(forms.ModelForm):
     class Meta:
         model = Arriendo
-        fields = '__all__'
+        fields = ['direccion', 'precio_mensual', 'imagen_principal', 'Corredor', 'destacada']
 
 class BuscarPropiedadForm(forms.Form):
     direccion = forms.CharField(label="Dirección", max_length=200, required=False)

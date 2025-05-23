@@ -1,19 +1,40 @@
-{# propiedades/templates/propiedades/detalle_venta.html #}
-
 {% extends 'propiedades/base.html' %}
+{% load static %} {# <-- Asegúrate de cargar static si vas a usar {% static %} para alguna imagen #}
 
 {% block content %}
 <div class="venta-detail">
     <h2>Detalles de la Propiedad: {{ venta.direccion }}</h2>
     <p><strong>Precio:</strong> ${{ venta.precio|floatformat:0 }}</p> {# Formato de precio sin decimales #}
     <p><strong>Corredor:</strong> {{ venta.Corredor.nombre }} (Tel: {{ venta.Corredor.telefono }})</p>
+    
+    {# Información del usuario que publicó (NUEVO) #}
+    <p>
+        <strong>Publicado por:</strong>
+        {% if venta.usuario %}
+            {{ venta.usuario.username }}
+        {% else %}
+            Usuario desconocido
+        {% endif %}
+    </p>
 
     {% if venta.imagen_principal %}
         <h3>Imagen Principal</h3>
         <img src="{{ venta.imagen_principal.url }}" alt="Imagen principal de {{ venta.direccion }}" style="max-width: 500px; height: auto; display: block; margin-bottom: 20px;">
     {% else %}
-        <p>No hay imagen principal disponible.</p>
+        {# Considera usar una imagen por defecto si no hay imagen principal, cargada con {% static %} #}
+        <p>No hay imagen principal disponible.</p> 
     {% endif %}
+
+    {# BOTÓN DE EDICIÓN (NUEVO) #}
+    {# Ubicación recomendada: Después de los detalles principales de la venta y antes de la galería o el botón de volver #}
+    {% if user.is_authenticated and user == venta.usuario or user.is_superuser %}
+        <div class="edit-button-container" style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
+            <a href="{% url 'editar_venta' pk=venta.pk %}" class="btn-custom-edit">
+                Editar Publicación
+            </a>
+        </div>
+    {% endif %}
+
 
     <h3>Galería de Imágenes</h3>
     {% if venta.get_gallery_images %}
@@ -35,7 +56,7 @@
 </div>
 
 <style>
-    /* Estilos básicos para la galería */
+    /* Estilos básicos para la galería (los tuyos existentes) */
     .image-gallery {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Columnas responsivas */
@@ -60,6 +81,21 @@
         padding: 10px;
         font-size: 0.9em;
         color: #555;
+    }
+
+    /* NUEVO ESTILO PARA EL BOTÓN DE EDICIÓN */
+    .btn-custom-edit {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #ffc107; /* Color amarillo de Bootstrap 'warning' */
+        color: #343a40; /* Texto oscuro */
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+    .btn-custom-edit:hover {
+        background-color: #e0a800; /* Un tono más oscuro al pasar el mouse */
     }
 </style>
 {% endblock %}

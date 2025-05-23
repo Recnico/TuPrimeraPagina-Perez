@@ -2,7 +2,7 @@
 
 from django.shortcuts import render, redirect, get_object_or_404 # Agregamos get_object_or_404
 from .forms import CorredorForm, ArriendoForm, VentaForm, VentaSearchForm , EditProfileForm , AvatarForm, ImagenFormSet # Importa ImagenFormSet
-from .models import Venta , Avatar, Imagen , Arriendo
+from .models import Venta , Avatar, Imagen , Arriendo , Corredor
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
@@ -24,7 +24,7 @@ def home(request):
     }
     return render(request, 'propiedades/home.html', context)
 
-
+@login_required
 def agregar_corredor(request):
     if request.method == 'POST':
         form = CorredorForm(request.POST)
@@ -36,6 +36,7 @@ def agregar_corredor(request):
         form = CorredorForm()
     return render(request, 'propiedades/form_template.html', {'form': form, 'titulo': 'Agregar Corredor'})
 
+@login_required
 def agregar_arriendo(request):
     if request.method == 'POST':
         form = ArriendoForm(request.POST)
@@ -47,7 +48,7 @@ def agregar_arriendo(request):
         form = ArriendoForm()
     return render(request, 'propiedades/form_template.html', {'form': form, 'titulo': 'Agregar Arriendo'})
 
-
+@login_required
 def agregar_venta(request):
     if request.method == 'POST':
         venta_form = VentaForm(request.POST, request.FILES) # Pasa request.FILES para imagen_principal
@@ -58,7 +59,7 @@ def agregar_venta(request):
             # para el formset de imágenes, pero aún no tiene un PK si es nueva.
             # La guardaremos dentro de la transacción atómica si todo lo demás es válido.
             venta_instance = venta_form.save(commit=False)
-            
+            venta_instance.usuario = request.user
             # Instancia el formset con los datos POST y FILES, y lo más importante:
             # Pasa la instancia de la Venta como 'instance' al formset.
             # Esto es crucial para que generic_inlineformset_factory sepa a qué objeto relacionar las imágenes.
@@ -112,6 +113,10 @@ def detalle_venta(request, pk):
     venta = get_object_or_404(Venta, pk=pk)
     # Las imágenes de la galería se obtienen con venta.get_gallery_images()
     return render(request, 'propiedades/detalle_venta.html', {'venta': venta})
+
+def detalle_arriendo(request, pk):
+    arriendo = get_object_or_404(Arriendo, pk=pk)
+    return render(request, 'propiedades/detalle_arriendo.html', {'arriendo': arriendo})
 
 
 def buscar_venta(request):
@@ -180,4 +185,66 @@ def editarPerfil(request):
     return render(request, 'propiedades/editarPerfil.html', {
         'form': form,
         'avatar_form': avatar_form,
+    })
+
+@login_required
+def editar_venta(request, pk):
+    venta = get_object_or_404(Venta, pk=pk)
+
+    # Lógica de permisos: Solo el creador o un superusuario/admin puede editar
+    if not (request.user == venta.usuario or request.user.is_superuser):
+        messages.error(request, 'No tienes permiso para editar esta propiedad.')
+        return redirect('detalle_venta', pk=venta.pk)
+
+    if request.method == 'POST':
+        venta_form = VentaForm(request.POST, request.FILES, instance=venta)
+        formset = ImagenFormSet(request.POST, request.FILES, instance=venta)
+
+        if venta_form.is_valid() and formset.is_valid():
+            with transaction.atomic():
+                venta_form.save()
+                formset.save()
+            messages.success(request, 'Venta y galería de imágenes actualizadas correctamente.')
+            return redirect('detalle_venta', pk=venta.pk)
+        else:
+            messages.error(request, 'Hubo errores al actualizar la venta. Por favor, revisa los datos.')
+    else:
+        venta_form = VentaForm(instance=venta)
+        formset = ImagenFormSet(instance=venta)
+
+    return render(request, 'propiedades/agregar_venta.html', { # Reutilizamos la plantilla de agregar
+        'venta_form': venta_form,
+        'formset': formset,
+        'titulo': 'Editar Venta',
+        'is_edit': True, # Para lógica condicional en la plantilla
+    })
+@login_required
+def editar_arriendo(request, pk):
+    arriendo = get_object_or_404(Arriendo, pk=pk)
+    if not (request.user == arriendo.usuario or request.user.is_superuser):
+        messages.error(request, 'No tienes permiso para editar esta propiedad de arriendo.')
+        return redirect('detalle_arriendo', pk=arriendo.pk)
+
+    if request.method == 'POST':
+        arriendo_form = ArriendoForm(request.POST, request.FILES, instance=arriendo)
+        # Asumiendo que ImagenFormSet también puede manejar instancias de Arriendo (por GenericForeignKey)
+        formset = ImagenFormSet(request.POST, request.FILES, instance=arriendo) 
+
+        if arriendo_form.is_valid() and formset.is_valid():
+            with transaction.atomic():
+                arriendo_form.save()
+                formset.save()
+            messages.success(request, 'Propiedad de arriendo y galería de imágenes actualizadas correctamente.')
+            return redirect('detalle_arriendo', pk=arriendo.pk)
+        else:
+            messages.error(request, 'Hubo errores al actualizar la propiedad de arriendo. Por favor, revisa los datos.')
+    else:
+        arriendo_form = ArriendoForm(instance=arriendo)
+        formset = ImagenFormSet(instance=arriendo)
+
+    return render(request, 'propiedades/agregar_arriendo.html', { # Reutiliza la plantilla de agregar_arriendo
+        'arriendo_form': arriendo_form,
+        'formset': formset,
+        'titulo': 'Editar Arriendo',
+        'is_edit': True,
     })
