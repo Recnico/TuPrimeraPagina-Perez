@@ -306,3 +306,9 @@ def editar_arriendo(request, pk):
         'titulo': 'Editar Arriendo',
         'is_edit': True,
     })
+
+def about(request):
+    """
+    Vistas  la página "Acerca de mí".u
+    """
+    return render(request, 'propiedades/about.html')

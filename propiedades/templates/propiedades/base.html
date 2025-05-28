@@ -144,7 +144,7 @@
             <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Inicio</a></li> {# Agregué el enlace a Inicio aquí #}
             <li class="nav-item"><a class="nav-link" href="{% url 'buscar_venta' %}">Buscar Venta</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'buscar_arriendo' %}">Buscar Arriendo</a></li> {# Asumiendo que tienes una vista para esto #}
-
+            <li class="nav-item"> <a class="nav-link" href="{% url 'about' %}">Acerca de Mí</a></li>
             {# Lógica para mostrar enlaces de autenticación/admin #}
             {% if user.is_authenticated %}
                 {% if user.is_staff or user.is_superuser %} {# Solo para usuarios staff o superusuarios #}
@@ -177,6 +177,7 @@
                     <a class="nav-link" href="{% url 'login' %}">Iniciar Sesión</a>
                 </li>
             {% endif %}
+            
         </ul>
     </div>
 </nav>
