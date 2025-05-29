@@ -1,8 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserChangeForm ,UserCreationForm
 from django.contrib.auth import get_user_model
-from .models import Corredor, Venta, Arriendo , Imagen
-from .models import Avatar
+from .models import Corredor, Venta, Arriendo , Imagen , Avatar
 from django.contrib.contenttypes.forms import generic_inlineformset_factory 
 from django.forms.widgets import ClearableFileInput
 
@@ -30,11 +29,10 @@ class VentaSearchForm(forms.Form):
     precio_max = forms.IntegerField(required=False, label='Precio máximo')
     corredor = forms.ModelChoiceField(queryset=Corredor.objects.all(), required=False, label='Corredor')
 
-class EditProfileForm(UserChangeForm): # Usar un nombre descriptivo como EditProfileForm
+class EditProfileForm(UserChangeForm):
     class Meta:
-        model = get_user_model() 
-        fields = ('username', 'email', 'first_name', 'last_name') 
-
+        model = get_user_model()
+        fields = ('username', 'email', 'first_name', 'last_name')
         labels = {
             'username': 'Nombre de Usuario',
             'email': 'Correo Electrónico',
@@ -44,6 +42,25 @@ class EditProfileForm(UserChangeForm): # Usar un nombre descriptivo como EditPro
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Aquí SOLO debes añadir la clase 'form-control'.
+        # La clase 'is-invalid' se gestionará en la plantilla.
+        for field_name, field in self.fields.items():
+            if field_name != 'password':
+                # Evita aplicar form-control a PasswordChangeForm si es un campo generado por UserChangeForm
+                # aunque en este caso 'password' no es un campo directo editable
+                field.widget.attrs['class'] = 'form-control'
+
+
+class AvatarForm(forms.ModelForm):
+    class Meta:
+        model = Avatar
+        fields = ['imagen']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Añadir la clase 'form-control' al campo de imagen
+        self.fields['imagen'].widget.attrs['class'] = 'form-control'
+        if self.fields['imagen'].errors:
+             self.fields['imagen'].widget.attrs['class'] += ' is-invalid'
 
 
 

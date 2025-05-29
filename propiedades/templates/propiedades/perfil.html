@@ -13,5 +13,15 @@
     <p>Nombre: {{ user.first_name }}</p>
     <p>Apellido: {{ user.last_name }}</p>
     <p>Email: {{ user.email }}</p>
+    {# Sección para el Avatar #}
+        <h3>Avatar</h3>
+        {% if user.is_authenticated and user.avatar %}
+            <div class="mb-3">
+                <p>Avatar actual:</p>
+                <img src="{{ user.avatar.imagen.url }}" alt="Avatar" style="max-width: 250px; max-height: 250px; border-radius: 70%; object-fit: cover;">
+            </div>
+        {% else %}
+            <p>No tienes un avatar asignado.</p>
+        {% endif %}
     <a href="{% url 'editar_perfil' %}">Editar Perfil</a>
 {% endblock content %}
