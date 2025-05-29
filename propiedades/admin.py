@@ -13,9 +13,11 @@ class ImagenInline(GenericTabularInline):
 
 @admin.register(Venta)
 class VentaAdmin(admin.ModelAdmin):
-    list_display = ('direccion', 'precio', 'Corredor', 'destacada', 'imagen_principal_thumbnail')
+    # MODIFICACIÓN AQUÍ: Añadimos 'usuario' a list_display
+    list_display = ('direccion', 'precio', 'Corredor', 'destacada', 'imagen_principal_thumbnail', 'usuario')
     search_fields = ('direccion',)
-    list_filter = ('Corredor', 'destacada')
+    # MODIFICACIÓN AQUÍ: Añadimos 'usuario' a list_filter
+    list_filter = ('Corredor', 'destacada', 'usuario')
 
     inlines = [ImagenInline]
 
@@ -27,8 +29,10 @@ class VentaAdmin(admin.ModelAdmin):
 
 @admin.register(Arriendo)
 class ArriendoAdmin(admin.ModelAdmin):
-    list_display = ('direccion', 'precio_mensual', 'Corredor', 'destacada')
+    # MODIFICACIÓN AQUÍ: Añadimos 'usuario' a list_display
+    list_display = ('direccion', 'precio_mensual', 'Corredor', 'destacada', 'usuario')
     search_fields = ('direccion',)
-    list_filter = ('Corredor', 'destacada')
+    # MODIFICACIÓN AQUÍ: Añadimos 'usuario' a list_filter
+    list_filter = ('Corredor', 'destacada', 'usuario')
 
     inlines = [ImagenInline]

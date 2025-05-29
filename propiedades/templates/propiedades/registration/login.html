@@ -1,14 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Iniciar sesión</title>
-</head>
-<body>
-    <h2>Iniciar sesión</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Entrar</button>
-    </form>
-</body>
-</html>
+{% block title %}Login ChileTop{% endblock %} 
+{% block content %} 
+<h2>Iniciar sesión</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Entrar</button>
+</form>
+<p>¿No tienes una cuenta? <a href="{% url 'register' %}">Regístrate aquí</a></p>
+{% endblock %}

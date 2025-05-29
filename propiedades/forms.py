@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserChangeForm
+from django.contrib.auth.forms import UserChangeForm ,UserCreationForm
 from django.contrib.auth import get_user_model
 from .models import Corredor, Venta, Arriendo , Imagen
 from .models import Avatar
@@ -66,3 +66,26 @@ ImagenFormSet = generic_inlineformset_factory(
     can_delete=True,
     fields=['imagen', 'descripcion', 'orden']
 )
+# NEW: User Registration Form
+class UserRegisterForm(UserCreationForm):
+    email = forms.EmailField(required=True, label='Correo Electrónico')
+
+    class Meta(UserCreationForm.Meta):
+        model = get_user_model()
+        fields = UserCreationForm.Meta.fields + ('email', 'first_name', 'last_name',) # Add email, first_name, last_name
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make first_name and last_name required (optional, but common for profiles)
+        self.fields['first_name'].required = True
+        self.fields['last_name'].required = True
+        # Add labels for consistency
+        self.fields['first_name'].label = 'Nombre'
+        self.fields['last_name'].label = 'Apellido'
+
+    # Optional: Add clean methods for custom validation if needed
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if get_user_model().objects.filter(email=email).exists():
+            raise forms.ValidationError("Este correo electrónico ya está registrado.")
+        return email

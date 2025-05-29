@@ -18,5 +18,6 @@ urlpatterns = [
     path('perfil/', views.perfil, name='perfil'),
     path('editarPerfil/', views.editarPerfil, name='editar_perfil'),
     path('about/', views.about, name='about'),
+    path('register/', views.register_request, name='register'),
 
 ]

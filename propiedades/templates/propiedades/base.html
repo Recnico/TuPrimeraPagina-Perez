@@ -147,11 +147,11 @@
             <li class="nav-item"> <a class="nav-link" href="{% url 'about' %}">Acerca de Mí</a></li>
             {# Lógica para mostrar enlaces de autenticación/admin #}
             {% if user.is_authenticated %}
-                {% if user.is_staff or user.is_superuser %} {# Solo para usuarios staff o superusuarios #}
                     <li class="nav-item"><a class="nav-link" href="{% url 'agregar_arriendo' %}">Agregar Arriendo</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'agregar_venta' %}">Agregar Venta</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'agregar_corredor' %}">Agregar Corredor</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/admin/">Admin</a></li> {# Enlace directo al panel de admin #}
+                {% if user.is_staff or user.is_superuser %} {# Solo para usuarios staff o superusuarios #}
+                    <li class="nav-item"><a class="nav-link" href="/admin/">Admin</a></li> {# Enlace directo al panel de admin #}    
                 {% endif %}
 
                 <li class="nav-item dropdown">
@@ -175,6 +175,9 @@
             {% else %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'login' %}">Iniciar Sesión</a>
+                </li>
+                <li class="nav-item"> {# New signup link #}
+                    <a class="nav-link" href="{% url 'register' %}">Registrarte</a>
                 </li>
             {% endif %}
             
