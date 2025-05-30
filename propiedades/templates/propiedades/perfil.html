@@ -1,27 +1,124 @@
 {% extends "propiedades/base.html" %}
+{% load static %} {# Asegúrate de cargar static para las imágenes del avatar #}
+{% load humanize %} {# Carga humanize para el filtro intcomma #}
 
 {% block title %}
-    Perfil
+    Perfil de Usuario
 {% endblock title %}
 
-{% block content_title %}
-    Perfil de usuario
-{% endblock content_title %}
-
 {% block content %}
-    <p>Nombre de usuario: {{ user.username }}</p>
-    <p>Nombre: {{ user.first_name }}</p>
-    <p>Apellido: {{ user.last_name }}</p>
-    <p>Email: {{ user.email }}</p>
-    {# Sección para el Avatar #}
-        <h3>Avatar</h3>
-        {% if user.is_authenticated and user.avatar %}
-            <div class="mb-3">
-                <p>Avatar actual:</p>
-                <img src="{{ user.avatar.imagen.url }}" alt="Avatar" style="max-width: 250px; max-height: 250px; border-radius: 70%; object-fit: cover;">
+<div class="container mt-5">
+    <div class="row">
+        {# Columna para la información del usuario y avatar #}
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Información del Usuario</h4>
+                </div>
+                <div class="card-body text-center">
+                    {% if user.is_authenticated and user.avatar %}
+                        <div class="mb-3">
+                            <img src="{{ user.avatar.imagen.url }}" alt="Avatar" class="img-fluid rounded-circle mb-2" style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #007bff;">
+                            <p class="card-text"><strong>{{ user.username }}</strong></p>
+                        </div>
+                    {% else %}
+                        <div class="mb-3">
+                            <img src="{% static 'images/default_avatar.png' %}" alt="Avatar por defecto" class="img-fluid rounded-circle mb-2" style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #ccc;">
+                            <p class="card-text"><strong>{{ user.username }}</strong></p>
+                        </div>
+                    {% endif %}
+                    <p class="card-text"><strong>Nombre:</strong> {{ user.first_name }}</p>
+                    <p class="card-text"><strong>Apellido:</strong> {{ user.last_name }}</p>
+                    <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'editar_perfil' %}" class="btn btn-outline-primary">Editar Perfil</a>
+                        {# Suponiendo que tienes una URL para cambiar la contraseña #}
+                        <a href="{% url 'cambiar_contrasenia' %}" class="btn btn-outline-secondary">Cambiar Contraseña</a>
+                    </div>
+                </div>
             </div>
-        {% else %}
-            <p>No tienes un avatar asignado.</p>
-        {% endif %}
-    <a href="{% url 'editar_perfil' %}">Editar Perfil</a>
+        </div>
+
+        {# Columna para las propiedades publicadas #}
+        <div class="col-md-8">
+            {# Propiedades en Venta #}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Mis Propiedades en Venta</h4>
+                </div>
+                <div class="card-body">
+                    {% if ventas_usuario %}
+                        <div class="row">
+                            {% for venta in ventas_usuario %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        {% if venta.imagen_principal %}
+                                            <img src="{{ venta.imagen_principal.url }}" class="card-img-top" alt="{{ venta.direccion }}" style="height: 200px; object-fit: cover;">
+                                        {% else %}
+                                            <img src="{% static 'images/default_venta.png' %}" class="card-img-top" alt="Imagen por defecto" style="height: 200px; object-fit: cover;">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ venta.direccion }}</h5>
+                                            <p class="card-text"><strong>Precio:</strong> ${{ venta.precio|intcomma }}</p>
+                                            <p class="card-text"><strong>Corredor:</strong> {{ venta.Corredor.nombre }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <a href="{% url 'detalle_venta' venta.pk %}" class="btn btn-sm btn-info">Ver Detalles</a>
+                                                <a href="{% url 'editar_venta' venta.pk %}" class="btn btn-sm btn-warning">Editar</a>
+                                                <a href="{% url 'eliminar_venta' venta.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No has publicado ninguna propiedad en venta aún.</p>
+                    {% endif %}
+                    <div class="text-center mt-3">
+                        <a href="{% url 'agregar_venta' %}" class="btn btn-success">Agregar Nueva Venta</a>
+                    </div>
+                </div>
+            </div>
+
+            {# Propiedades en Arriendo #}
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">Mis Propiedades en Arriendo</h4>
+                </div>
+                <div class="card-body">
+                    {% if arriendos_usuario %}
+                        <div class="row">
+                            {% for arriendo in arriendos_usuario %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        {% if arriendo.imagen_principal %}
+                                            <img src="{{ arriendo.imagen_principal.url }}" class="card-img-top" alt="{{ arriendo.direccion }}" style="height: 200px; object-fit: cover;">
+                                        {% else %}
+                                            <img src="{% static 'images/default_arriendo.png' %}" class="card-img-top" alt="Imagen por defecto" style="height: 200px; object-fit: cover;">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ arriendo.direccion }}</h5>
+                                            <p class="card-text"><strong>Precio Mensual:</strong> ${{ arriendo.precio_mensual|intcomma }}</p>
+                                            <p class="card-text"><strong>Corredor:</strong> {{ arriendo.Corredor.nombre }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <a href="{% url 'detalle_arriendo' arriendo.pk %}" class="btn btn-sm btn-info">Ver Detalles</a>
+                                                <a href="{% url 'editar_arriendo' arriendo.pk %}" class="btn btn-sm btn-warning">Editar</a>
+                                                <a href="{% url 'eliminar_arriendo' arriendo.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No has publicado ninguna propiedad en arriendo aún.</p>
+                    {% endif %}
+                    <div class="text-center mt-3">
+                        <a href="{% url 'agregar_arriendo' %}" class="btn btn-info">Agregar Nuevo Arriendo</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock content %}

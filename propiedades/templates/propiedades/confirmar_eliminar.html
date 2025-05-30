@@ -1,0 +1,44 @@
+{% extends "propiedades/base.html" %}
+{% load humanize %} {# Carga el filtro humanize para formatear números #}
+
+{% block title %}Confirmar Eliminación{% endblock title %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h2 class="mb-0">Confirmar Eliminación de Propiedad</h2>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Estás a punto de eliminar la siguiente propiedad de **{{ tipo|capfirst }}**:
+                    </p>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item"><strong>Dirección:</strong> {{ objeto.direccion }}</li>
+                        {% if tipo == 'venta' %}
+                            <li class="list-group-item"><strong>Precio:</strong> ${{ objeto.precio|intcomma }}</li>
+                        {% else %} {# Es arriendo #}
+                            <li class="list-group-item"><strong>Precio Mensual:</strong> ${{ objeto.precio_mensual|intcomma }}</li>
+                        {% endif %}
+                        <li class="list-group-item"><strong>Corredor:</strong> {{ objeto.Corredor.nombre }}</li>
+                    </ul>
+
+                    <div class="alert alert-warning" role="alert">
+                        ¡Atención! Esta acción es irreversible. Una vez eliminada, la propiedad no podrá ser recuperada.
+                    </div>
+
+                    <p>¿Estás seguro de que deseas eliminar esta propiedad?</p>
+
+                    <form method="post" class="d-flex justify-content-between">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-lg">Sí, Eliminar Permanentemente</button>
+                        <a href="{% url 'perfil' %}" class="btn btn-secondary btn-lg">Cancelar y Volver</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
