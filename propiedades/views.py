@@ -3,12 +3,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CorredorForm, ArriendoForm, VentaForm, VentaSearchForm, EditProfileForm, AvatarForm, ImagenFormSet, UserRegisterForm , BuscarPropiedadForm
 from .models import Venta, Avatar, Imagen, Arriendo, Corredor
-from django.contrib.auth.forms import UserChangeForm 
+from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth import get_user_model, login 
+from django.contrib.auth import get_user_model, login
 from django.contrib import messages
-from django.contrib.auth.forms import PasswordChangeForm 
-from django.contrib.auth import update_session_auth_hash 
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from django.db import transaction
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group, Permission
@@ -32,7 +32,7 @@ def agregar_corredor(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Corredor agregado exitosamente.')
-            return redirect('home')  
+            return redirect('home')
     else:
         form = CorredorForm()
     return render(request, 'propiedades/agregar_corredor.html', {'form': form})
@@ -41,22 +41,37 @@ def agregar_corredor(request):
 def agregar_arriendo(request):
     if request.method == 'POST':
         arriendo_form = ArriendoForm(request.POST, request.FILES)
+        # IMPORTANTE: No uses prefix si es el único formset en la página de agregar.
+        # Si usaras varios formsets del mismo tipo (ImagenFormSet), entonces sí.
         formset = ImagenFormSet(request.POST, request.FILES)
         if arriendo_form.is_valid() and formset.is_valid():
             with transaction.atomic():
                 arriendo = arriendo_form.save(commit=False)
                 arriendo.usuario = request.user  # Asigna el usuario actual
                 arriendo.save()
-                
-                for form in formset:
-                    if form.cleaned_data:
-                        imagen = form.save(commit=False)
-                        imagen.content_object = arriendo
-                        imagen.save()
+
+                # --- CORRECCIÓN CLAVE AQUÍ ---
+                # Guarda las instancias del formset que son válidas y tienen datos.
+                # formset.save(commit=False) devuelve una lista de instancias
+                # de Imagen válidas, sin guardar todavía.
+                imagenes = formset.save(commit=False)
+                for imagen in imagenes:
+                    imagen.content_object = arriendo
+                    imagen.save()
+                # Si el formset tiene 'can_delete=True', también puedes procesar las eliminaciones
+                # formset.save_m2m() si tuvieras ManyToMany fields en Imagen, pero no es el caso.
+                # --- FIN CORRECCIÓN ---
+
                 messages.success(request, 'Propiedad de arriendo y galería de imágenes guardadas correctamente.')
                 return redirect('detalle_arriendo', pk=arriendo.pk)
         else:
             messages.error(request, 'Hubo errores al guardar la propiedad de arriendo. Por favor, revisa los datos.')
+            # Para depurar, puedes imprimir los errores:
+            # print("Errores del formulario de arriendo:", arriendo_form.errors)
+            # print("Errores del formset:", formset.errors)
+            # for f in formset:
+            #     print(f"Errores del formulario de imagen {f.prefix}: {f.errors}")
+
     else:
         arriendo_form = ArriendoForm()
         formset = ImagenFormSet()
@@ -67,35 +82,92 @@ def agregar_arriendo(request):
         'is_edit': False,
     })
 
-@login_required
-def agregar_venta(request):
+# @login_required # Puedes aplicar este decorador si solo usuarios logueados pueden agregar/editar
+def agregar_o_editar_venta(request, pk=None):
+    venta_instance = None
+    is_edit = False
+
+    if pk: # Si se proporciona un PK, estamos en modo edición
+        venta_instance = get_object_or_404(Venta, pk=pk)
+        is_edit = True
+    
+    # Inicializa el formulario principal
     if request.method == 'POST':
-        venta_form = VentaForm(request.POST, request.FILES)
-        formset = ImagenFormSet(request.POST, request.FILES)
-        if venta_form.is_valid() and formset.is_valid():
+        venta_form = VentaForm(request.POST, request.FILES, instance=venta_instance)
+        
+        # Inicializa el formset SÓLO si estamos editando (para gestionar imágenes existentes)
+        formset = None
+        if is_edit:
+            formset = ImagenFormSet(request.POST, request.FILES, instance=venta_instance)
+        
+        # Bandera para saber si todo es válido
+        all_forms_valid = False
+
+        if venta_form.is_valid():
+            if is_edit: # Si estamos editando, también validamos el formset
+                if formset and formset.is_valid(): # Asegurarse de que el formset fue inicializado y es válido
+                    all_forms_valid = True
+                elif not formset: # Este caso no debería pasar si is_edit es True
+                    messages.error(request, 'Error interno: el formset no pudo ser inicializado para edición.')
+            else: # Si estamos agregando, solo necesitamos que venta_form sea válido
+                all_forms_valid = True
+        
+        if all_forms_valid:
             with transaction.atomic():
+                # Guarda el formulario principal
                 venta = venta_form.save(commit=False)
-                venta.usuario = request.user  # Asigna el usuario actual
+                if not is_edit: # Solo asigna el usuario si es una nueva venta
+                    venta.usuario = request.user
                 venta.save()
-                
-                for form in formset:
-                    if form.cleaned_data:
-                        imagen = form.save(commit=False)
+
+                # Procesa el formset para imágenes existentes (solo si estamos editando)
+                if is_edit and formset:
+                    # Guarda las imágenes modificadas/nuevas del formset
+                    imagenes_formset = formset.save(commit=False)
+                    for imagen in imagenes_formset:
                         imagen.content_object = venta
                         imagen.save()
-                messages.success(request, 'Propiedad de venta y galería de imágenes guardadas correctamente.')
-                return redirect('detalle_venta', pk=venta.pk)
+                    # Elimina las imágenes marcadas para borrar
+                    for imagen_to_delete in formset.deleted_objects:
+                        imagen_to_delete.delete()
+
+                # Procesa las nuevas imágenes del campo 'gallery_images' (siempre que se suban)
+                if 'gallery_images' in request.FILES:
+                    for f in request.FILES.getlist('gallery_images'):
+                        # Aquí puedes agregar validaciones adicionales para 'f' si es necesario
+                        # Por ejemplo, verificar el tamaño o tipo de archivo antes de guardar
+                        Imagen.objects.create(content_object=venta, imagen=f)
+
+            messages.success(request, 'Propiedad y galería de imágenes guardadas correctamente.')
+            return redirect('detalle_venta', pk=venta.pk) # Redirige a la vista de detalle
         else:
-            messages.error(request, 'Hubo errores al guardar la propiedad de venta. Por favor, revisa los datos.')
-    else:
-        venta_form = VentaForm()
-        formset = ImagenFormSet()
-    return render(request, 'propiedades/agregar_venta.html', {
+            # --- CÓDIGO DE DEPURACIÓN (MANTENLO PARA VER ERRORES EN LA TERMINAL) ---
+            print("--- ERRORES DE VALIDACIÓN ---")
+            if venta_form.errors:
+                print("Errores en VentaForm:", venta_form.errors.as_json())
+            if formset and formset.errors: # Si el formset fue inicializado y tiene errores
+                print("Errores generales en Formset:", formset.errors)
+                for i, form in enumerate(formset):
+                    if form.errors:
+                        print(f"Errores en el formulario de imagen #{i}:", form.errors.as_json())
+            print("--- FIN DE ERRORES ---")
+            # --- FIN CÓDIGO DE DEPURACIÓN ---
+            
+            messages.error(request, 'Hubo errores al guardar la propiedad. Por favor, revisa los datos.')
+
+    else: # GET request (para mostrar el formulario por primera vez)
+        venta_form = VentaForm(instance=venta_instance)
+        # Inicializa el formset SOLO si estamos editando
+        formset = ImagenFormSet(instance=venta_instance) if is_edit else None
+
+    context = {
         'venta_form': venta_form,
         'formset': formset,
-        'titulo': 'Agregar Nueva Venta',
-        'is_edit': False,
-    })
+        'titulo': 'Editar Venta' if is_edit else 'Agregar Nueva Venta',
+        'is_edit': is_edit, # Pasar la bandera is_edit a la plantilla
+    }
+    return render(request, 'propiedades/agregar_venta.html', context)
+
 
 def detalle_venta(request, pk):
     venta = get_object_or_404(Venta, pk=pk)
@@ -109,7 +181,7 @@ def editar_venta(request, pk):
     # Solo permitir la edición si el usuario es el creador de la propiedad o es staff/superuser
     if venta.usuario != request.user and not request.user.is_staff and not request.user.is_superuser:
         messages.warning(request, 'No tienes permiso para editar esta propiedad.')
-        return redirect('detalle_venta', pk=pk) # O a la página de perfil, etc.
+        return redirect('detalle_venta', pk=pk)
 
     if request.method == 'POST':
         venta_form = VentaForm(request.POST, request.FILES, instance=venta)
@@ -117,17 +189,33 @@ def editar_venta(request, pk):
         if venta_form.is_valid() and formset.is_valid():
             with transaction.atomic():
                 venta_form.save()
-                formset.save()
+                # formset.save() ya guarda las instancias existentes, elimina las marcadas para eliminación
+                # y guarda las nuevas válidas.
+                # No necesitas el bucle manual si usas formset.save() sin commit=False aquí.
+                formset.save() # Guarda y actualiza las instancias de Imagen
 
-                # --- NUEVA LÓGICA: Procesa nuevas imágenes subidas durante la edición de venta ---
-                if request.FILES.getlist('gallery_images'):
-                    for uploaded_file in request.FILES.getlist('gallery_images'):
-                        Imagen.objects.create(
-                            content_object=venta,
-                            imagen=uploaded_file,
-                            descripcion=""
-                        )
-                # --- FIN NUEVA LÓGICA ---
+                # La "NUEVA LÓGICA" que tenías aquí para 'gallery_images' duplicaba el propósito del formset.
+                # Si usas ImagenFormSet, el campo 'imagen' en cada formulario del formset
+                # es para la subida de esas imágenes. No necesitas un campo 'gallery_images'
+                # adicional en tu VentaForm principal.
+                # Si 'gallery_images' es un campo custom en tu plantilla no manejado por el formset,
+                # entonces esta lógica podría ser necesaria, pero es más común que el formset maneje
+                # todas las imágenes asociadas.
+                # Si quieres que los usuarios puedan subir más imágenes además de las que vienen
+                # del formset (por ejemplo, con un botón "agregar más imágenes"), entonces
+                # tendrías que asegurarte de que esas imágenes se manejen a través de formularios
+                # adicionales o que el formset sea dinámico.
+                # Por ahora, asumo que el formset es la forma principal de agregar/editar imágenes.
+                # Si 'gallery_images' es un input name separado, y quieres que funcione así:
+                # for uploaded_file in request.FILES.getlist('gallery_images'):
+                #     Imagen.objects.create(
+                #         content_object=venta,
+                #         imagen=uploaded_file,
+                #         descripcion=""
+                #     )
+                # Esto es válido, pero significa que no estás usando el ImagenForm para esas subidas.
+                # Es mejor usar el formset para todo para tener validación y consistencia.
+                # Por lo tanto, he comentado tu "NUEVA LÓGICA" a menos que tengas un caso de uso específico.
 
             messages.success(request, 'Propiedad de venta y galería de imágenes actualizadas correctamente.')
             return redirect('detalle_venta', pk=venta.pk)
@@ -135,7 +223,8 @@ def editar_venta(request, pk):
             messages.error(request, 'Hubo errores al actualizar la propiedad de venta. Por favor, revisa los datos.')
     else:
         venta_form = VentaForm(instance=venta)
-        formset = ImagenFormSet(instance=venta) # Pasa la instancia de la venta al formset
+        # Cuando editas, el formset necesita la instancia para precargar las imágenes existentes
+        formset = ImagenFormSet(instance=venta)
 
     return render(request, 'propiedades/agregar_venta.html', { # Reutiliza la plantilla de agregar_venta
         'venta_form': venta_form,
@@ -153,10 +242,9 @@ def detalle_arriendo(request, pk):
 def editar_arriendo(request, pk):
     arriendo = get_object_or_404(Arriendo, pk=pk)
 
-    # Solo permitir la edición si el usuario es el creador de la propiedad o es staff/superuser
     if arriendo.usuario != request.user and not request.user.is_staff and not request.user.is_superuser:
         messages.warning(request, 'No tienes permiso para editar esta propiedad.')
-        return redirect('detalle_arriendo', pk=pk) # O a la página de perfil, etc.
+        return redirect('detalle_arriendo', pk=pk)
 
     if request.method == 'POST':
         arriendo_form = ArriendoForm(request.POST, request.FILES, instance=arriendo)
@@ -164,17 +252,16 @@ def editar_arriendo(request, pk):
         if arriendo_form.is_valid() and formset.is_valid():
             with transaction.atomic():
                 arriendo_form.save()
-                formset.save()
+                formset.save() # Guarda y actualiza las instancias de Imagen
 
-                # --- NUEVA LÓGICA: Procesa nuevas imágenes subidas durante la edición de arriendo ---
-                if request.FILES.getlist('gallery_images'):
-                    for uploaded_file in request.FILES.getlist('gallery_images'):
-                        Imagen.objects.create(
-                            content_object=arriendo,
-                            imagen=uploaded_file,
-                            descripcion=""
-                        )
-                # --- FIN NUEVA LÓGICA ---
+                # Comentado por las mismas razones que en editar_venta
+                # if request.FILES.getlist('gallery_images'):
+                #    for uploaded_file in request.FILES.getlist('gallery_images'):
+                #        Imagen.objects.create(
+                #            content_object=arriendo,
+                #            imagen=uploaded_file,
+                #            descripcion=""
+                #        )
 
             messages.success(request, 'Propiedad de arriendo y galería de imágenes actualizadas correctamente.')
             return redirect('detalle_arriendo', pk=arriendo.pk)
@@ -191,13 +278,10 @@ def editar_arriendo(request, pk):
         'is_edit': True,
     })
 
-# Nuevas vistas para eliminar propiedades
-
 @login_required
 def eliminar_venta(request, pk):
     venta = get_object_or_404(Venta, pk=pk)
 
-    # Solo permitir la eliminación si el usuario es el creador de la propiedad o es staff/superuser
     if venta.usuario != request.user and not request.user.is_staff and not request.user.is_superuser:
         messages.warning(request, 'No tienes permiso para eliminar esta propiedad.')
         return redirect('detalle_venta', pk=pk)
@@ -205,15 +289,14 @@ def eliminar_venta(request, pk):
     if request.method == 'POST':
         venta.delete()
         messages.success(request, 'La propiedad de venta ha sido eliminada exitosamente.')
-        return redirect('perfil') # Redirige al perfil después de eliminar
-    
+        return redirect('perfil')
+
     return render(request, 'propiedades/confirmar_eliminar.html', {'objeto': venta, 'tipo': 'venta'})
 
 @login_required
 def eliminar_arriendo(request, pk):
     arriendo = get_object_or_404(Arriendo, pk=pk)
 
-    # Solo permitir la eliminación si el usuario es el creador de la propiedad o es staff/superuser
     if arriendo.usuario != request.user and not request.user.is_staff and not request.user.is_superuser:
         messages.warning(request, 'No tienes permiso para eliminar esta propiedad.')
         return redirect('detalle_arriendo', pk=pk)
@@ -221,7 +304,7 @@ def eliminar_arriendo(request, pk):
     if request.method == 'POST':
         arriendo.delete()
         messages.success(request, 'La propiedad de arriendo ha sido eliminada exitosamente.')
-        return redirect('perfil') # Redirige al perfil después de eliminar
+        return redirect('perfil')
 
     return render(request, 'propiedades/confirmar_eliminar.html', {'objeto': arriendo, 'tipo': 'arriendo'})
 
@@ -236,7 +319,7 @@ def buscar_arriendo(request):
         if direccion:
             arriendos = arriendos.filter(direccion__icontains=direccion)
             busqueda_realizada = True
-    
+
     return render(request, 'propiedades/buscar_arriendo.html', {
         'form': form,
         'arriendos': arriendos,
@@ -266,7 +349,7 @@ def buscar_venta(request):
         if corredor:
             ventas = ventas.filter(Corredor=corredor)
             busqueda_realizada = True
-   
+
     return render(request, 'propiedades/buscar_venta.html', {
         'form': form,
         'ventas': ventas,
@@ -275,7 +358,6 @@ def buscar_venta(request):
 
 @login_required
 def perfil(request):
-    # Obtener las propiedades de venta y arriendo publicadas por el usuario
     ventas_usuario = Venta.objects.filter(usuario=request.user)
     arriendos_usuario = Arriendo.objects.filter(usuario=request.user)
 
@@ -288,8 +370,7 @@ def perfil(request):
 @login_required
 def editarPerfil(request):
     User = get_user_model()
-    
-    # Manejo del formulario de edición de perfil
+
     if request.method == 'POST':
         form = EditProfileForm(request.POST, instance=request.user)
         avatar_form = AvatarForm(request.POST, request.FILES, instance=request.user.avatar if hasattr(request.user, 'avatar') else None)
@@ -310,9 +391,6 @@ def editarPerfil(request):
     return render(request, 'propiedades/editarPerfil.html', {'form': form, 'avatar_form': avatar_form})
 
 def about(request):
-    """
-    Vistas  la página "Acerca de mí".u
-    """
     return render(request, 'propiedades/about.html')
 
 
@@ -321,7 +399,6 @@ def register_request(request):
         form = UserRegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Asigna el usuario al grupo 'Inmobiliario' si existe
             inmobiliario_group, created = Group.objects.get_or_create(name='Inmobiliario')
             user.groups.add(inmobiliario_group)
             login(request, user)

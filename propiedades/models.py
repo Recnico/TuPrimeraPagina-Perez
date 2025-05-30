@@ -36,7 +36,10 @@ class Venta(models.Model):
         return self.direccion
 
     def get_gallery_images(self):
-        return Imagen.objects.filter(content_type=ContentType.objects.get_for_model(self), object_id=self.id)
+        return Imagen.objects.filter(
+        content_type=ContentType.objects.get_for_model(self),
+        object_id=self.id
+    )
 
 
 class Arriendo(models.Model):
@@ -53,7 +56,10 @@ class Arriendo(models.Model):
         return self.direccion
 
     def get_gallery_images(self):
-        return Imagen.objects.filter(object_id=self.id, content_type__model='arriendo')
+        return Imagen.objects.filter(
+        content_type=ContentType.objects.get_for_model(self),
+        object_id=self.id
+    )
     
 class Imagen(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)

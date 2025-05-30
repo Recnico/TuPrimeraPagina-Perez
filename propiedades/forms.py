@@ -39,16 +39,16 @@ class EditProfileForm(UserChangeForm):
             'first_name': 'Nombre',
             'last_name': 'Apellido',
         }
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Aquí SOLO debes añadir la clase 'form-control'.
-        # La clase 'is-invalid' se gestionará en la plantilla.
+        # **ESTO ES LO MÁS IMPORTANTE PARA ELIMINAR EL CAMPO DE CONTRASEÑA**
+        # Asegúrate de que el campo 'password' no esté presente en el formulario
+        if 'password' in self.fields:
+            del self.fields['password'] # Elimina el campo 'password' del formulario
+
+        # Añadir la clase 'form-control' a todos los campos visibles
         for field_name, field in self.fields.items():
-            if field_name != 'password':
-                # Evita aplicar form-control a PasswordChangeForm si es un campo generado por UserChangeForm
-                # aunque en este caso 'password' no es un campo directo editable
-                field.widget.attrs['class'] = 'form-control'
+            field.widget.attrs['class'] = 'form-control'
 
 
 class AvatarForm(forms.ModelForm):
@@ -79,7 +79,7 @@ class ImagenForm(forms.ModelForm):
 ImagenFormSet = generic_inlineformset_factory(
     Imagen,         # ¡Aquí el modelo hijo es el primer argumento!
     form=ImagenForm,
-    extra=3,
+    extra=0,        # MODIFICADO: Cambiado de 3 a 0 para no renderizar formularios vacíos de imagen
     can_delete=True,
     fields=['imagen', 'descripcion', 'orden']
 )

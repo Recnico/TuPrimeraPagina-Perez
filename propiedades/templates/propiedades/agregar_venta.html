@@ -13,114 +13,40 @@
 
     <h3>Galería de Imágenes</h3>
 
-    {# Muestra las imágenes existentes y permite eliminarlas/editarlas con el formset #}
-    {% if is_edit and formset %} {# Solo si estamos editando y hay un formset #}
-        {{ formset.management_form }} {# ESTO ES CRUCIAL PARA LOS FORMSETS #}
-        <div id="image-formset-container">
-            {% for form in formset %}
-                <div class="image-formset-row">
-                    {# Muestra los campos del formulario de imagen #}
-                    {{ form.as_p }}
-                    {# Si can_delete=True en el formset, esto añade el checkbox de eliminación #}
-                    {% if form.instance.pk %}<p>{{ form.DELETE }} Eliminar esta imagen</p>{% endif %}
-                    <hr>
-                </div>
-            {% endfor %}
-            <p>Puedes eliminar imágenes existentes marcando la casilla "Eliminar esta imagen".</p>
-            <p>Para añadir más imágenes, usa el campo "Añadir nuevas imágenes" a continuación.</p>
-        </div>
-        <br>
-    {% endif %}
-
-    {# NUEVO: Campo para subir múltiples imágenes a la vez #}
-    <h4>Añadir nuevas imágenes (selección múltiple)</h4>
-    <div id="multi-image-upload-container">
-        <input type="file" id="multi-image-selector" name="gallery_images" multiple accept="image/*">
-        <small class="form-text text-muted">Selecciona una o varias imágenes nuevas.</small>
-        <div id="image-previews" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px;">
+    {# ESTO ES CRUCIAL PARA LOS FORMSETS - SIEMPRE DEBE ESTAR PRESENTE #}
+    {{ formset.management_form }} 
+    
+    <div id="image-formset-container">
+        {# Este bucle renderiza las imágenes existentes y, si el formset está configurado con extra > 0, también los formularios vacíos para nuevas imágenes #}
+        {% for form in formset %}
+            <div class="image-formset-row">
+                {# Muestra los campos del formulario de imagen (ej. el campo de archivo) #}
+                {{ form.as_p }}
+                {# Si can_delete=True en el formset, esto añade el checkbox de eliminación #}
+                {% if form.instance.pk %}<p>{{ form.DELETE }} Eliminar esta imagen</p>{% endif %}
+                <hr>
             </div>
+        {% endfor %}
     </div>
-    <br>
+
+    {# Puedes eliminar el <input type="file" name="gallery_images" multiple> si prefieres usar solo el formset. #}
+    {# Si quieres mantenerlo, necesitarás un manejo adicional en views.py (ver abajo). #}
+    {# Si lo eliminas, asegúrate de que tu ImagenFormSet en forms.py tenga extra > 0 para nuevos campos de imagen. #}
 
     <button type="submit">Guardar Venta</button>
 </form>
 
-{# Script para previsualizar las imágenes seleccionadas #}
+{# Mantén tus scripts y estilos si los necesitas para la previsualización de imágenes, etc. #}
+{# Sin embargo, si vas a usar solo el formset, la lógica del input "multi-image-selector" puede cambiar. #}
+{# El script de previsualización que tienes actualmente está ligado a "multi-image-selector", que ya no sería gestionado por el formset. #}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const multiImageSelector = document.getElementById('multi-image-selector');
-        const imagePreviews = document.getElementById('image-previews');
-
-        if (multiImageSelector) { // Asegurarse de que el elemento existe
-            multiImageSelector.addEventListener('change', function() {
-                imagePreviews.innerHTML = ''; // Limpiar previsualizaciones anteriores
-                if (this.files && this.files.length > 0) {
-                    Array.from(this.files).forEach(file => {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const imgContainer = document.createElement('div');
-                            imgContainer.style.position = 'relative';
-                            imgContainer.style.width = '100px';
-                            imgContainer.style.height = '100px';
-                            imgContainer.style.overflow = 'hidden';
-                            imgContainer.style.border = '1px solid #ddd';
-
-                            const img = document.createElement('img');
-                            img.src = e.target.result;
-                            img.style.width = '100%';
-                            img.style.height = '100%';
-                            img.style.objectFit = 'cover';
-
-                            imgContainer.appendChild(img);
-                            imagePreviews.appendChild(imgContainer);
-                        };
-                        reader.readAsDataURL(file);
-                    });
-                }
-            });
-        }
-    });
+    // Si usas el formset para añadir imágenes, necesitarás un script para añadir nuevos formularios dinámicamente.
+    // Esto es un patrón común para formsets dinámicos. Por ahora, si no lo tienes, puedes ignorarlo.
+    // Si estás pasando 'extra' forms en tu ImagenFormSet desde la vista, esos se renderizarán automáticamente.
 </script>
 
 <style>
-    /* Estilos básicos para la galería */
-    .image-formset-row {
-        border: 1px solid #ccc;
-        padding: 15px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-    }
-    .image-formset-row p {
-        margin-bottom: 5px;
-    }
-    .image-formset-row input[type="file"] {
-        display: block;
-        margin-top: 5px;
-    }
-    .image-formset-row input[type="text"] {
-        width: 100%;
-        padding: 8px;
-        margin-top: 5px;
-        box-sizing: border-box;
-    }
-    .image-formset-row input[type="number"] {
-        width: 50%;
-        padding: 8px;
-        margin-top: 5px;
-        box-sizing: border-box;
-    }
-    #add-more-images { /* Este botón ya no es estrictamente necesario para la carga múltiple */
-        margin-top: 15px;
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-    #add-more-images:hover {
-        background-color: #0056b3;
-    }
+    /* Tus estilos CSS */
 </style>
 
 {% endblock %}

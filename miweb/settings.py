@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "propiedades",
     'django.contrib.humanize',
+    'crispy_forms',
+    'crispy_bootstrap5'
 ]
 
 MIDDLEWARE = [
@@ -136,3 +138,5 @@ LOGIN_REDIRECT_URL = 'home'
 LOGIN_URL = 'login' 
 LOGOUT_REDIRECT_URL = 'home' 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
