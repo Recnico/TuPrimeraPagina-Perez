@@ -49,7 +49,9 @@ INSTALLED_APPS = [
     "propiedades",
     'django.contrib.humanize',
     'crispy_forms',
-    'crispy_bootstrap5'
+    'crispy_bootstrap5',
+    'ckeditor',
+    'ckeditor_uploader',
 ]
 
 MIDDLEWARE = [
@@ -140,3 +142,20 @@ LOGOUT_REDIRECT_URL = 'home'
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+CKEDITOR_UPLOAD_PATH = "uploads/" # Los archivos subidos por CKEditor irán a media/uploads/
+# Opcional: Configuración básica del toolbar de CKEditor
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': '100%',
+        'extraPlugins': 'codesnippet', # Ejemplo: Añadir un plugin
+    },
+    # Puedes añadir otras configuraciones para diferentes usos
+    'basic_toolbar': {
+        'toolbar': 'Basic',
+        'height': 150,
+        'width': '100%',
+    },
+}

@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 from .models import Corredor, Venta, Arriendo , Imagen , Avatar
 from django.contrib.contenttypes.forms import generic_inlineformset_factory 
 from django.forms.widgets import ClearableFileInput
+from ckeditor.widgets import CKEditorWidget
+from ckeditor_uploader.widgets import CKEditorUploadingWidget # Si usas subida de archivos
 
 class CorredorForm(forms.ModelForm):
     class Meta:
@@ -19,6 +21,11 @@ class ArriendoForm(forms.ModelForm):
     class Meta:
         model = Arriendo
         fields = ['direccion', 'precio_mensual', 'imagen_principal', 'Corredor', 'destacada']
+        widgets = {
+            'descripcion': CKEditorUploadingWidget(), # Usa este si quieres upload de imágenes
+            # O usa solo CKEditorWidget() si no necesitas subir imágenes en el editor
+            # 'descripcion': CKEditorWidget(),
+        }
 
 class BuscarPropiedadForm(forms.Form):
     direccion = forms.CharField(label="Dirección", max_length=200, required=False)

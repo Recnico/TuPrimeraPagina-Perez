@@ -16,7 +16,7 @@
             Usuario desconocido
         {% endif %}
     </p>
-
+    <p class="card-text"><strong>Fecha de Publicación:</strong> {{ venta.fecha_publicacion|date:"d M Y" }}</p> 
     {% if venta.imagen_principal %}
         <h3>Imagen Principal</h3>
         <img src="{{ venta.imagen_principal.url }}" alt="Imagen principal de {{ venta.direccion }}" style="max-width: 500px; height: auto; display: block; margin-bottom: 20px;">

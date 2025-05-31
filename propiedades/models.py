@@ -3,6 +3,9 @@ from django.contrib.auth.models import User # Asegúrate de importar User
 import os
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from ckeditor.widgets import CKEditorWidget
+from ckeditor_uploader.widgets import CKEditorUploadingWidget
+from ckeditor_uploader.fields import RichTextUploadingField
 
 def avatar_upload_path(instance, filename):
     base_name, ext = os.path.splitext(filename)
@@ -31,6 +34,7 @@ class Venta(models.Model):
     Corredor = models.ForeignKey(Corredor, on_delete=models.CASCADE)
     destacada = models.BooleanField(default=False)
     usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ventas_publicadas')
+    fecha_publicacion = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return self.direccion
@@ -46,11 +50,11 @@ class Arriendo(models.Model):
     Corredor = models.ForeignKey(Corredor, on_delete=models.CASCADE)
     direccion = models.CharField(max_length=200)
     precio_mensual = models.DecimalField(max_digits=10, decimal_places=0)
-    descripcion = models.TextField(blank=True, null=True)
+    descripcion = RichTextUploadingField(blank=True, null=True) # Usa RichTextUploadingField para subir imágenes
     imagen_principal = models.ImageField(upload_to='arriendos/', blank=True, null=True)
     destacada = models.BooleanField(default=False)
     usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='arriendos_publicados')
-
+    fecha_publicacion = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return self.direccion

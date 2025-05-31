@@ -27,7 +27,7 @@ urlpatterns = [
     path('accounts/logout/', auth_views.LogoutView.as_view(next_page=reverse_lazy('home')), name='cerrar_sesion'),
     path('accounts/password-change/', auth_views.PasswordChangeView.as_view(template_name='propiedades/cambio_contrasenia.html',success_url=reverse_lazy('cambio_contrasenia_exitoso')), name='cambiar_contrasenia'),
     path('accounts/password-change/done/', auth_views.PasswordChangeDoneView.as_view(template_name='propiedades/cambio_contrasenia_exitoso.html'), name='cambio_contrasenia_exitoso'),
-
+    path('ckeditor/', include('ckeditor_uploader.urls')),
     path('', include('propiedades.urls')),
     
 ]

@@ -12,7 +12,7 @@
     <div class="card mb-4 shadow-sm">
         <div class="card-body">
             <p class="card-text"><strong>Precio Mensual:</strong> <span class="text-success">${{ arriendo.precio_mensual|floatformat:0 }}</span></p>
-            <p class="card-text"><strong>Descripción:</strong> {{ arriendo.descripcion|default:"No hay descripción disponible." }}</p>
+            <p class="card-text"><strong>Descripción:</strong> {{ arriendo.descripcion|safe|default:"No hay descripción disponible." }}</p>
             <p class="card-text"><strong>Dormitorios:</strong> {{ arriendo.dormitorios|default:"N/A" }}</p> {# Agregado default en caso de que sea nulo #}
             <p class="card-text"><strong>Baños:</strong> {{ arriendo.banos|default:"N/A" }}</p> {# Agregado default #}
             <p class="card-text"><strong>Estacionamientos:</strong> {{ arriendo.estacionamientos|default:"N/A" }}</p> {# Agregado default #}
