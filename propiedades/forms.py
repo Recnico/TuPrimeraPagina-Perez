@@ -3,9 +3,10 @@ from django.contrib.auth.forms import UserChangeForm ,UserCreationForm
 from django.contrib.auth import get_user_model
 from .models import Corredor, Venta, Arriendo , Imagen , Avatar
 from django.contrib.contenttypes.forms import generic_inlineformset_factory 
-from django.forms.widgets import ClearableFileInput
+from django.forms.widgets import ClearableFileInput , DateInput
 from ckeditor.widgets import CKEditorWidget
 from ckeditor_uploader.widgets import CKEditorUploadingWidget # Si usas subida de archivos
+
 
 class CorredorForm(forms.ModelForm):
     class Meta:
@@ -15,7 +16,25 @@ class CorredorForm(forms.ModelForm):
 class VentaForm(forms.ModelForm):
     class Meta:
         model = Venta
-        fields = ['direccion', 'precio', 'imagen_principal', 'Corredor', 'destacada']
+        fields = [
+            'direccion',
+            'precio',
+            'imagen_principal',
+            'Corredor',
+            'destacada',
+            'descripcion_detallada',  
+            'metros_cuadrados',       
+            'habitaciones',           
+            'banios',                
+            'estacionamientos',       
+            'orientacion',            
+            'acepta_mascotas',        
+            'disponible_desde',       
+        ]
+        widgets = {
+            'descripcion_detallada': CKEditorUploadingWidget(), # Usa CKEditor para este campo
+            'disponible_desde': DateInput(attrs={'type': 'date'}), # Muestra un selector de fecha
+        }
 
 class ArriendoForm(forms.ModelForm):
     class Meta:

@@ -1,9 +1,9 @@
-*.pyc
-__pycache__/
-<<<<<<< HEAD
-.env
-*.pyc
-=======
-db.sqlite3
+# Archivos de medios subidos por los usuarios
 media/
->>>>>>> 57f4b2c03e1fcced15b060d086bf35dde914a4a3
+
+# Base de datos de SQLite (solo para desarrollo)
+db.sqlite3
+
+# Archivos compilados de Python
+__pycache__/
+*.pyc

@@ -1,45 +1,81 @@
+{# propiedades/templates/propiedades/detalle_venta.html #}
 {% extends 'propiedades/base.html' %}
 {% load static %} {# <-- Asegúrate de cargar static si vas a usar {% static %} para alguna imagen #}
+{% load humanize %} {# Para formatear números grandes como el precio #}
 
 {% block content %}
-<div class="venta-detail">
-    <h2>Detalles de la Propiedad: {{ venta.direccion }}</h2>
-    <p><strong>Precio:</strong> ${{ venta.precio|floatformat:0 }}</p> {# Formato de precio sin decimales #}
-    <p><strong>Corredor:</strong> {{ venta.Corredor.nombre }} (Tel: {{ venta.Corredor.telefono }})</p>
-    
-    {# Información del usuario que publicó (NUEVO) #}
-    <p>
-        <strong>Publicado por:</strong>
-        {% if venta.usuario %}
-            {{ venta.usuario.username }}
-        {% else %}
-            Usuario desconocido
-        {% endif %}
-    </p>
-    <p class="card-text"><strong>Fecha de Publicación:</strong> {{ venta.fecha_publicacion|date:"d M Y" }}</p> 
-    {% if venta.imagen_principal %}
-        <h3>Imagen Principal</h3>
-        <img src="{{ venta.imagen_principal.url }}" alt="Imagen principal de {{ venta.direccion }}" style="max-width: 500px; height: auto; display: block; margin-bottom: 20px;">
-    {% else %}
-        {# Considera usar una imagen por defecto si no hay imagen principal, cargada con {% static %} #}
-        <p>No hay imagen principal disponible.</p> 
-    {% endif %}
+<div class="venta-detail container mt-4"> {# Agregamos 'container' para mejor centrado y margen superior #}
+    <h2 class="mb-3">Detalles de la Propiedad: {{ venta.direccion }}</h2>
 
-    {# BOTÓN DE EDICIÓN (NUEVO) #}
-    {# Ubicación recomendada: Después de los detalles principales de la venta y antes de la galería o el botón de volver #}
-    {% if user.is_authenticated and user == venta.usuario or user.is_superuser %}
-        <div class="edit-button-container" style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
-            <a href="{% url 'editar_venta' pk=venta.pk %}" class="btn-custom-edit">
-                Editar Publicación
-            </a>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <p class="card-text"><strong>Precio:</strong> <span class="text-success">${{ venta.precio|floatformat:0|intcomma }}</span></p>
+            <p class="card-text"><strong>Corredor:</strong> {{ venta.Corredor.nombre }} (Tel: {{ venta.Corredor.telefono }})</p>
+            {% if venta.Corredor.correo %} {# Muestra el correo si existe #}
+                <p class="card-text"><strong>Email Corredor:</strong> {{ venta.Corredor.correo }}</p>
+            {% endif %}
+            
+            <p class="card-text">
+                <strong>Publicado por:</strong>
+                {% if venta.usuario %}
+                    {{ venta.usuario.username }}
+                {% else %}
+                    Usuario desconocido
+                {% endif %}
+            </p>
+            <p class="card-text"><strong>Fecha de Publicación:</strong> {{ venta.fecha_publicacion|date:"d M Y" }}</p> 
+
+            {% if venta.imagen_principal %}
+                <h3 class="mt-4">Imagen Principal</h3>
+                <img src="{{ venta.imagen_principal.url }}" alt="Imagen principal de {{ venta.direccion }}" class="img-fluid rounded mb-3" style="max-width: 600px; height: auto; display: block;">
+            {% else %}
+                {# Opcional: Aquí podrías poner una imagen por defecto si no hay imagen principal #}
+                <p>No hay imagen principal disponible.</p> 
+            {% endif %}
+
+            <hr>
+
+            {# --- NUEVOS CAMPOS DE DETALLE DE VENTA --- #}
+            <h3 class="mt-4">Características de la Propiedad</h3>
+            <ul class="list-group list-group-flush mb-4">
+                {% if venta.metros_cuadrados %}
+                    <li class="list-group-item"><strong>Metros Cuadrados:</strong> {{ venta.metros_cuadrados }} m²</li>
+                {% endif %}
+                {% if venta.habitaciones %}
+                    <li class="list-group-item"><strong>Habitaciones:</strong> {{ venta.habitaciones }}</li>
+                {% endif %}
+                {% if venta.banios %}
+                    <li class="list-group-item"><strong>Baños:</strong> {{ venta.banios }}</li>
+                {% endif %}
+                {% if venta.estacionamientos is not None %} {# Usar is not None para que 0 se muestre #}
+                    <li class="list-group-item"><strong>Estacionamientos:</strong> {{ venta.estacionamientos }}</li>
+                {% endif %}
+                {% if venta.orientacion %}
+                    <li class="list-group-item"><strong>Orientación:</strong> {{ venta.orientacion }}</li>
+                {% endif %}
+                {# Usamos iconos de Bootstrap para 'Acepta Mascotas'. Asegúrate de tener Bootstrap Icons si quieres verlos. #}
+                <li class="list-group-item"><strong>Acepta Mascotas:</strong> {% if venta.acepta_mascotas %}Sí <i class="bi bi-check-circle-fill text-success"></i>{% else %}No <i class="bi bi-x-circle-fill text-danger"></i>{% endif %}</li>
+                {% if venta.disponible_desde %}
+                    <li class="list-group-item"><strong>Disponible Desde:</strong> {{ venta.disponible_desde|date:"d M Y" }}</li>
+                {% endif %}
+            </ul>
+
+            {% if venta.descripcion_detallada %}
+                <h3 class="mt-4">Descripción Detallada</h3>
+                <div class="card p-3 mb-4 bg-light">
+                    {# ¡IMPORTANTE! Usar |safe para renderizar el contenido HTML de CKEditor #}
+                    {{ venta.descripcion_detallada|safe }} 
+                </div>
+            {% endif %}
+            {# --- FIN NUEVOS CAMPOS --- #}
+
         </div>
-    {% endif %}
+    </div>
 
-
-    <h3>Galería de Imágenes</h3>
-    {% if venta.get_gallery_images %}
+    <h3 class="mt-4">Galería de Imágenes</h3>
+    {% if imagenes %}
         <div class="image-gallery">
-            {% for imagen in venta.get_gallery_images %}
+            {% for imagen in imagenes %}
                 <div class="gallery-item">
                     <img src="{{ imagen.imagen.url }}" alt="{{ imagen.descripcion|default:'Imagen de la propiedad' }}">
                     {% if imagen.descripcion %}
@@ -49,17 +85,34 @@
             {% endfor %}
         </div>
     {% else %}
-        <p>No hay imágenes adicionales en la galería.</p>
+        <p class="alert alert-info mt-3">No hay imágenes adicionales en la galería.</p>
     {% endif %}
 
-    <p><a href="{% url 'buscar_venta' %}">Volver a la búsqueda de ventas</a></p>
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <a href="{% url 'buscar_venta' %}" class="btn btn-secondary">Volver a la búsqueda</a>
+        {# Mostrar botones de edición/eliminación solo al usuario dueño, staff o superusuario #}
+        {% if user.is_authenticated and user == venta.usuario or user.is_staff or user.is_superuser %}
+            <a href="{% url 'editar_venta' pk=venta.pk %}" class="btn btn-warning">Editar Propiedad</a>
+            <a href="{% url 'eliminar_venta' pk=venta.pk %}" class="btn btn-danger">Eliminar Propiedad</a>
+        {% endif %}
+    </div>
+
 </div>
 
+{# Puedes mantener o añadir tus propios estilos CSS aquí, o moverlos a un archivo CSS estático #}
 <style>
-    /* Estilos básicos para la galería (los tuyos existentes) */
+    /* Estilos para las listas de características */
+    .venta-detail .list-group-item {
+        font-size: 1.1rem;
+    }
+    .venta-detail .list-group-item strong {
+        color: #343a40; /* Color oscuro para las etiquetas */
+    }
+
+    /* Estilos para la galería de imágenes */
     .image-gallery {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Columnas responsivas */
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 15px;
         margin-top: 20px;
     }
@@ -82,20 +135,5 @@
         font-size: 0.9em;
         color: #555;
     }
-
-    /* NUEVO ESTILO PARA EL BOTÓN DE EDICIÓN */
-    .btn-custom-edit {
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: #ffc107; /* Color amarillo de Bootstrap 'warning' */
-        color: #343a40; /* Texto oscuro */
-        text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
-        transition: background-color 0.3s ease;
-    }
-    .btn-custom-edit:hover {
-        background-color: #e0a800; /* Un tono más oscuro al pasar el mouse */
-    }
 </style>
-{% endblock %}
+{% endblock content %}
