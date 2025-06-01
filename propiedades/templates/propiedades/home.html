@@ -120,11 +120,8 @@
 
     {# WhatsApp Floating Button - Colocado dentro de block content #}
     <a href="https://wa.me/56973084594?text=Hola%2C%20estoy%20interesado%20en%20una%20propiedad%20que%20vi%20en%20su%20web." target="_blank" class="whatsapp-float">
-<<<<<<< HEAD
+        {# SOLUCIÓN: Elegimos una sola versión del logo y de la ruta #}
         <img src="{% static 'propiedades/img/whatsapp_logo.png' %}" alt="WhatsApp">
-=======
-        <img src="{% static 'propiedades/img/whatapp_logo.png' %}" alt="WhatsApp">
->>>>>>> 57f4b2c03e1fcced15b060d086bf35dde914a4a3
     </a>
 
 {% endblock %}
@@ -152,17 +149,13 @@
     }
 
     .whatsapp-float img {
-<<<<<<< HEAD
+        {# SOLUCIÓN: Elegimos una sola versión de las dimensiones #}
         width: 65px; /* Tamaño del logo dentro del círculo */
         height: 65px;
-=======
-        width: 100px; /* Tamaño del logo dentro del círculo */
-        height: 100px;
->>>>>>> 57f4b2c03e1fcced15b060d086bf35dde914a4a3
     }
 
     .whatsapp-float:hover {
         background-color: #1DA851; /* Un tono más oscuro al pasar el ratón */
     }
 </style>
-{% endblock extra_css %}.
+{% endblock extra_css %}
