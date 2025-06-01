@@ -1,0 +1,76 @@
+{# propiedades/templates/propiedades/post_list.html #}
+{% extends 'propiedades/base.html' %}
+{% load static %}
+{% load humanize %} {# Para formatear números o fechas si es necesario #}
+
+{% block title %}Listado de Posts{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Nuestros Últimos Posts</h2>
+
+   <div class="text-end mb-3">
+        {% if user.is_authenticated and user.is_staff or user.is_superuser %} {# O user.is_authenticated and user.is_superuser #}
+            <a href="{% url 'crear_post' %}" class="btn btn-success">Crear Nuevo Post</a>
+        {% endif %}
+    </div>
+ 
+    {% if no_posts_message %}
+        <div class="alert alert-info text-center" role="alert">
+            {{ no_posts_message }}
+        </div>
+    {% elif posts %}
+        <div class="row row-cols-1 g-4"> {# Usamos row-cols-1 para que los posts se vean como una lista #}
+            {% for post in posts %}
+                <div class="col">
+                    <div class="card shadow-sm h-100">
+                        <div class="row g-0">
+                            {% if post.imagen_principal %}
+                                <div class="col-md-4">
+                                    <img src="{{ post.imagen_principal.url }}" class="img-fluid rounded-start h-100" alt="{{ post.titulo }}" style="object-fit: cover;">
+                                </div>
+                            {% endif %}
+                            <div class="col-md-{% if post.imagen_principal %}8{% else %}12{% endif %}">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ post.titulo }}</h5>
+                                    {% if post.subtitulo %}
+                                        <p class="card-subtitle mb-2 text-muted">{{ post.subtitulo }}</p>
+                                    {% endif %}
+                                    <p class="card-text"><small class="text-muted">Publicado el {{ post.fecha_publicacion|date:"d M Y" }} por {% if post.autor %}{{ post.autor.username }}{% else %}Anónimo{% endif %}</small></p>
+                                    
+                                    {# Muestra un extracto del contenido, sin las etiquetas HTML #}
+                                    <p class="card-text">{{ post.contenido|striptags|truncatechars:200 }}</p>
+                                    
+                                    <a href="{% url 'detalle_post' pk=post.pk %}" class="btn btn-primary btn-sm mt-2">Leer más</a>
+
+                                    {# Botones de edición/eliminación (solo para el autor, staff o superusuario) #}
+                                    {% if user.is_authenticated and user == post.autor or user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}
+                                        <a href="{% url 'editar_post' pk=post.pk %}" class="btn btn-warning btn-sm mt-2 ms-2">Editar</a>
+                                        <a href="{% url 'eliminar_post' pk=post.pk %}" class="btn btn-danger btn-sm mt-2 ms-2">Eliminar</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        {# Paginación (si paginate_by está definido en la CBV) #}
+        {% if is_paginated %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+                    {% endif %}
+                    <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+
+    {% endif %}
+</div>
+{% endblock content %}

@@ -21,5 +21,10 @@ urlpatterns = [
     path('editarPerfil/', views.editarPerfil, name='editar_perfil'),
     path('about/', views.about, name='about'),
     path('register/', views.register_request, name='register'),
+    path('pages/', views.PostListView.as_view(), name='listado_posts'), # Listado de posts
+    path('pages/crear/', views.PostCreateView.as_view(), name='crear_post'), # Crear nuevo post
+    path('pages/<int:pk>/', views.PostDetailView.as_view(), name='detalle_post'), # Detalle de un post
+    path('pages/<int:pk>/editar/', views.PostUpdateView.as_view(), name='editar_post'), # Editar post
+    path('pages/<int:pk>/eliminar/', views.PostDeleteView.as_view(), name='eliminar_post'), # Eliminar post
 
 ]

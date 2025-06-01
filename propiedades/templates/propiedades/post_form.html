@@ -1,0 +1,38 @@
+{# propiedades/templates/propiedades/post_form.html #}
+{% extends 'propiedades/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %} {# Para renderizar formularios con Bootstrap #}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">
+                        {% if form.instance.pk %}Editar Post{% else %}Crear Nuevo Post{% endif %}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }} {# Renderiza todos los campos del formulario con crispy forms #}
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                {% if form.instance.pk %}Actualizar Post{% else %}Publicar Post{% endif %}
+                            </button>
+                            <a href="{% url 'listado_posts' %}" class="btn btn-secondary btn-lg">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# CKEditor requiere un script para inicializarlo, pero crispy forms suele manejar esto si está configurado #}
+{# Si el editor no aparece, puedes necesitar incluir el script de CKEditor aquí o en base.html #}
+{{ form.media }} {# Esto es importante para que CKEditor se inicialice correctamente #}
+
+{% endblock content %}

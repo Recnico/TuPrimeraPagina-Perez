@@ -186,3 +186,23 @@ class Avatar(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.imagen.name if self.imagen else 'Sin imagen'}"
+
+class Post(models.Model):
+    titulo = models.CharField(max_length=200, verbose_name="Título del Post")
+    subtitulo = models.CharField(max_length=255, blank=True, null=True, verbose_name="Subtítulo")
+    contenido = RichTextUploadingField(verbose_name="Contenido", blank=True, null=True)
+    imagen_principal = models.ImageField(upload_to='posts_pics/', blank=True, null=True, verbose_name="Imagen Principal del Post")
+    fecha_publicacion = models.DateField(auto_now_add=True, verbose_name="Fecha de Publicación")
+    autor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Autor")
+
+    class Meta:
+        verbose_name = "Post del Blog"
+        verbose_name_plural = "Posts del Blog"
+        ordering = ['-fecha_publicacion'] # Ordenar por fecha de publicación descendente
+
+    def __str__(self):
+        return self.titulo
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('detalle_post', kwargs={'pk': self.pk}) # Usaremos 'detalle_post' en nuestras URLs

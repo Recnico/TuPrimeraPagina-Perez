@@ -2,7 +2,7 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CorredorForm, ArriendoForm, VentaForm, VentaSearchForm, EditProfileForm, AvatarForm, ImagenFormSet, UserRegisterForm , BuscarPropiedadForm
-from .models import Venta, Avatar, Imagen, Arriendo, Corredor
+from .models import Venta, Avatar, Imagen, Arriendo, Corredor , Post
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import get_user_model, login
@@ -13,6 +13,9 @@ from django.db import transaction
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy # Para redirecciones con nombre de URL
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin # Para control de acceso
 
 
 def home(request):
@@ -418,3 +421,63 @@ def register_request(request):
     form = UserRegisterForm()
     # CAMBIA ESTA LÍNEA:
     return render(request, "registration/register.html", {"form": form})
+
+class PostListView(ListView):
+    model = Post
+    template_name = 'propiedades/post_list.html' # Creamos esta plantilla en el siguiente paso
+    context_object_name = 'posts' # Nombre de la variable en la plantilla para la lista de posts
+    paginate_by = 5 # Opcional: para paginación si hay muchos posts
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Mensaje si no hay posts
+        if not context['posts']:
+            context['no_posts_message'] = "No hay posts de blog aún. ¡Sé el primero en crear uno!"
+        return context
+
+class PostDetailView(DetailView):
+    model = Post
+    template_name = 'propiedades/post_detail.html' # Creamos esta plantilla en el siguiente paso
+    context_object_name = 'post' # Nombre de la variable en la plantilla para un solo post
+
+class PostCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView): # ¡AÑADIDO UserPassesTestMixin!
+    model = Post
+    template_name = 'propiedades/post_form.html'
+    fields = ['titulo', 'subtitulo', 'contenido', 'imagen_principal']
+    success_url = reverse_lazy('listado_posts')
+
+    def form_valid(self, form):
+        form.instance.autor = self.request.user
+        return super().form_valid(form)
+
+    def test_func(self):
+        # Este método es llamado por UserPassesTestMixin.
+        # Devuelve True si el usuario es staff O superuser, False en caso contrario.
+        return self.request.user.is_staff or self.request.user.is_superuser
+
+    def form_valid(self, form):
+        # Asigna automáticamente el autor del post al usuario que está logueado y creando el post
+        form.instance.autor = self.request.user
+        return super().form_valid(form)
+
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView): # Requiere login y ser el autor o staff/superuser
+    model = Post
+    template_name = 'propiedades/post_form.html'
+    fields = ['titulo', 'subtitulo', 'contenido', 'imagen_principal']
+    success_url = reverse_lazy('listado_posts')
+
+    def test_func(self):
+        # Este mixin (UserPassesTestMixin) llama a test_func para verificar permisos
+        # Solo el autor del post, un staff o un superusuario pueden editar
+        post = self.get_object()
+        return self.request.user == post.autor or self.request.user.is_staff or self.request.user.is_superuser
+
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView): # Requiere login y ser el autor o staff/superuser
+    model = Post
+    template_name = 'propiedades/post_confirm_delete.html' # Creamos esta plantilla
+    success_url = reverse_lazy('listado_posts') # Redirige después de eliminar
+
+    def test_func(self):
+        # Similar a UpdateView, solo el autor del post, un staff o un superusuario pueden eliminar
+        post = self.get_object()
+        return self.request.user == post.autor or self.request.user.is_staff or self.request.user.is_superuser

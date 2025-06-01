@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Avatar , Corredor , Venta , Arriendo , Imagen
+from .models import Avatar , Corredor , Venta , Arriendo , Imagen ,Post
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.utils.html import format_html
 
@@ -36,3 +36,5 @@ class ArriendoAdmin(admin.ModelAdmin):
     list_filter = ('Corredor', 'destacada', 'usuario')
 
     inlines = [ImagenInline]
+
+admin.site.register(Post)
