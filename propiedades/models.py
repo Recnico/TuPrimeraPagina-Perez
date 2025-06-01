@@ -85,7 +85,7 @@ class Imagen(models.Model):
     
 class Avatar(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='avatar')
-    imagen = models.ImageField(upload_to=avatar_upload_path, null=True, blank=True)
+    imagen = models.ImageField(upload_to=avatar_upload_path, default='avatares/default_avatar.png') 
 
     class Meta:
         verbose_name = "Avatar"

@@ -16,17 +16,19 @@
                     <h4 class="mb-0">Información del Usuario</h4>
                 </div>
                 <div class="card-body text-center">
-                    {% if user.is_authenticated and user.avatar %}
-                        <div class="mb-3">
+                    <div class="mb-3">
+                        {# Lógica para mostrar el avatar del usuario #}
+                        {% if user.is_authenticated %}
+                            {# La vista 'perfil' ya asegura que request.user.avatar exista y tenga una imagen (o la por defecto). #}
+                            {# Por lo tanto, podemos acceder directamente a user.avatar.imagen.url #}
                             <img src="{{ user.avatar.imagen.url }}" alt="Avatar" class="img-fluid rounded-circle mb-2" style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #007bff;">
-                            <p class="card-text"><strong>{{ user.username }}</strong></p>
-                        </div>
-                    {% else %}
-                        <div class="mb-3">
-                            <img src="{% static 'images/default_avatar.png' %}" alt="Avatar por defecto" class="img-fluid rounded-circle mb-2" style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #ccc;">
-                            <p class="card-text"><strong>{{ user.username }}</strong></p>
-                        </div>
-                    {% endif %}
+                        {% else %}
+                            {# Este bloque es para usuarios NO autenticados. Si no hay login_required, se podría mostrar un avatar genérico. #}
+                            {# Si esta vista SIEMPRE requiere autenticación, este bloque nunca se alcanzará. #}
+                            <img src="{% static 'img/usuario_generico.png' %}" alt="Avatar por defecto" class="img-fluid rounded-circle mb-2" style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #ccc;">
+                        {% endif %}
+                        <p class="card-text"><strong>{{ user.username }}</strong></p>
+                    </div>
                     <p class="card-text"><strong>Nombre:</strong> {{ user.first_name }}</p>
                     <p class="card-text"><strong>Apellido:</strong> {{ user.last_name }}</p>
                     <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
@@ -39,7 +41,7 @@
             </div>
         </div>
 
-        {# Columna para las propiedades publicadas #}
+        {# Columna para las propiedades publicadas - SIN CAMBIOS #}
         <div class="col-md-8">
             {# Propiedades en Venta #}
             <div class="card shadow-sm mb-4">

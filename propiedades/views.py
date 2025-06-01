@@ -358,6 +358,7 @@ def buscar_venta(request):
 
 @login_required
 def perfil(request):
+    avatar, created = Avatar.objects.get_or_create(user=request.user)
     ventas_usuario = Venta.objects.filter(usuario=request.user)
     arriendos_usuario = Arriendo.objects.filter(usuario=request.user)
 
@@ -372,21 +373,29 @@ def editarPerfil(request):
     User = get_user_model()
 
     if request.method == 'POST':
+        # Asegúrate de que el objeto Avatar exista para el usuario antes de intentar instanciar el formset
+        # Si no existe, lo crea con la imagen por defecto.
+        avatar_instance, created = Avatar.objects.get_or_create(user=request.user)
+
         form = EditProfileForm(request.POST, instance=request.user)
-        avatar_form = AvatarForm(request.POST, request.FILES, instance=request.user.avatar if hasattr(request.user, 'avatar') else None)
+        avatar_form = AvatarForm(request.POST, request.FILES, instance=avatar_instance) # Usa la instancia asegurada
 
         if form.is_valid() and avatar_form.is_valid():
             form.save()
-            avatar = avatar_form.save(commit=False)
-            avatar.user = request.user
+            avatar = avatar_form.save(commit=False) # Guarda el avatar
+            avatar.user = request.user # Asegura que el usuario esté asignado (aunque ya lo hace get_or_create)
             avatar.save()
             messages.success(request, 'Tu perfil ha sido actualizado exitosamente.')
             return redirect('perfil')
         else:
             messages.error(request, 'Por favor, corrige los errores en el formulario.')
     else:
+        # En GET, asegúrate de que el objeto Avatar exista
+        # Si no existe, lo crea con la imagen por defecto.
+        avatar_instance, created = Avatar.objects.get_or_create(user=request.user)
+
         form = EditProfileForm(instance=request.user)
-        avatar_form = AvatarForm(instance=request.user.avatar if hasattr(request.user, 'avatar') else None)
+        avatar_form = AvatarForm(instance=avatar_instance) # Usa la instancia asegurada
 
     return render(request, 'propiedades/editarPerfil.html', {'form': form, 'avatar_form': avatar_form})
 
@@ -401,9 +410,11 @@ def register_request(request):
             user = form.save()
             inmobiliario_group, created = Group.objects.get_or_create(name='Inmobiliario')
             user.groups.add(inmobiliario_group)
+            Avatar.objects.create(user=user)
             login(request, user)
             messages.success(request, "Registro exitoso.")
             return redirect("home")
         messages.error(request, "Registro fallido. Información inválida.")
     form = UserRegisterForm()
-    return render(request, "propiedades/register.html", {"register_form": form})
+    # CAMBIA ESTA LÍNEA:
+    return render(request, "registration/register.html", {"form": form})
