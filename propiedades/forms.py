@@ -145,3 +145,9 @@ class UserRegisterForm(UserCreationForm):
         if get_user_model().objects.filter(email=email).exists():
             raise forms.ValidationError("Este correo electrónico ya está registrado.")
         return email
+    
+class ContactoPropiedadForm(forms.Form):
+    nombre = forms.CharField(max_length=100, label='Tu Nombre')
+    email = forms.EmailField(label='Tu Correo Electrónico')
+    telefono = forms.CharField(max_length=20, required=False, label='Tu Teléfono (opcional)')
+    mensaje = forms.CharField(widget=forms.Textarea, label='Tu Mensaje')

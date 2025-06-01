@@ -161,3 +161,16 @@ CKEDITOR_CONFIGS = {
         'width': '100%',
     },
 }
+
+# --- CONFIGURACIÓN DE CORREO ELECTRÓNICO ---
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com' # Si usas Gmail. Cambia si usas otro proveedor.
+EMAIL_PORT = 587 # Puerto estándar para TLS
+EMAIL_USE_TLS = True # Usa TLS para seguridad
+EMAIL_HOST_USER = 'sior.ciisa@gmail.com' # ¡CAMBIA ESTO por tu dirección de correo!
+EMAIL_HOST_PASSWORD = 'bppy wimk qhcp wptq' # ¡CAMBIA ESTO por tu contraseña! Para Gmail, usa una "contraseña de aplicación".
+
+# Dirección de correo predeterminada para el destinatario de solicitudes.
+# ¡CAMBIA ESTO por la dirección a la que quieres que lleguen los correos!
+DEFAULT_TO_EMAIL = 'nicolas.perez.cerda@gmail.com' 
+# --- FIN CONFIGURACIÓN DE CORREO ---

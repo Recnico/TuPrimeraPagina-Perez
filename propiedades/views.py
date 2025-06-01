@@ -1,7 +1,7 @@
 # propiedades/views.py
 
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import CorredorForm, ArriendoForm, VentaForm, VentaSearchForm, EditProfileForm, AvatarForm, ImagenFormSet, UserRegisterForm , BuscarPropiedadForm
+from .forms import CorredorForm, ArriendoForm, VentaForm, VentaSearchForm, EditProfileForm, AvatarForm, ImagenFormSet, UserRegisterForm , BuscarPropiedadForm , ContactoPropiedadForm
 from .models import Venta, Avatar, Imagen, Arriendo, Corredor , Post
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -16,6 +16,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy # Para redirecciones con nombre de URL
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin # Para control de acceso
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 def home(request):
@@ -175,7 +177,64 @@ def agregar_o_editar_venta(request, pk=None):
 def detalle_venta(request, pk):
     venta = get_object_or_404(Venta, pk=pk)
     imagenes = venta.get_gallery_images()
-    return render(request, 'propiedades/detalle_venta.html', {'venta': venta, 'imagenes': imagenes})
+    
+    # Instancia del formulario de contacto
+    contacto_form = ContactoPropiedadForm() # Lo inicializamos para el GET request
+
+    if request.method == 'POST':
+        # Si el formulario de contacto se envió
+        contacto_form = ContactoPropiedadForm(request.POST)
+        if contacto_form.is_valid():
+            nombre = contacto_form.cleaned_data['nombre']
+            email_remitente = contacto_form.cleaned_data['email']
+            telefono = contacto_form.cleaned_data['telefono']
+            mensaje_usuario = contacto_form.cleaned_data['mensaje']
+
+            # Construir el mensaje de correo
+            asunto = f"Solicitud de información sobre propiedad: {venta.direccion} (ID: {venta.pk})"
+            mensaje_correo = f"""
+            Has recibido una nueva solicitud de información para la propiedad:
+            Dirección: {venta.direccion}
+            ID de Propiedad: {venta.pk}
+            Precio: ${venta.precio:,}
+
+            Datos del interesado:
+            Nombre: {nombre}
+            Correo: {email_remitente}
+            Teléfono: {telefono if telefono else 'No proporcionado'}
+
+            Mensaje del interesado:
+            {mensaje_usuario}
+            """
+
+            # Dirección de correo a la que se enviará la solicitud
+            # Puedes usar una dirección fija, o la del corredor, o la del usuario dueño si existe.
+            # Aquí usaremos una dirección fija de tu configuración de email_host_user.
+            # Opcional: si quieres enviarlo al corredor de la propiedad:
+            # email_corredor = venta.Corredor.correo if venta.Corredor and venta.Corredor.correo else settings.DEFAULT_TO_EMAIL
+
+            try:
+                send_mail(
+                    asunto,
+                    mensaje_correo,
+                    settings.EMAIL_HOST_USER, # Remitente del correo (tu cuenta de correo)
+                    [settings.DEFAULT_TO_EMAIL], # Destinatario (tu correo o el del corredor)
+                    fail_silently=False,
+                )
+                messages.success(request, 'Tu solicitud ha sido enviada exitosamente. Nos pondremos en contacto contigo pronto.')
+                # Redirige a la misma página de detalle para evitar reenvíos
+                return redirect('detalle_venta', pk=venta.pk)
+            except Exception as e:
+                messages.error(request, f'Hubo un error al enviar tu solicitud. Por favor, inténtalo de nuevo más tarde. Error: {e}')
+        else:
+            messages.error(request, 'Por favor, corrige los errores en el formulario de contacto.')
+
+    context = {
+        'venta': venta,
+        'imagenes': imagenes,
+        'contacto_form': contacto_form, # Pasa el formulario de contacto al contexto
+    }
+    return render(request, 'propiedades/detalle_venta.html', context)
 
 @login_required
 def editar_venta(request, pk):

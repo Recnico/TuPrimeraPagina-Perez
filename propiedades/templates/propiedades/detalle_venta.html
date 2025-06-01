@@ -2,6 +2,7 @@
 {% extends 'propiedades/base.html' %}
 {% load static %} {# <-- Asegúrate de cargar static si vas a usar {% static %} para alguna imagen #}
 {% load humanize %} {# Para formatear números grandes como el precio #}
+{% load crispy_forms_tags %} {# ¡IMPORTA ESTO para usar crispy forms! #}
 
 {% block content %}
 <div class="venta-detail container mt-4"> {# Agregamos 'container' para mejor centrado y margen superior #}
@@ -87,6 +88,21 @@
     {% else %}
         <p class="alert alert-info mt-3">No hay imágenes adicionales en la galería.</p>
     {% endif %}
+    <div class="card shadow-sm mt-4">
+    <div class="card-header bg-info text-white">
+        <h4 class="mb-0">¿Interesado en esta propiedad? ¡Contáctanos!</h4>
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate> {# quitamos enctype para este formulario sin archivos #}
+            {% csrf_token %}
+            {{ contacto_form|crispy }} {# Renderiza el formulario con crispy forms #}
+            <button type="submit" class="btn btn-primary mt-3">Enviar Solicitud</button>
+        </form>
+    </div>
+</div>
+
+
+
 
     <div class="d-flex justify-content-between align-items-center mt-4">
         <a href="{% url 'buscar_venta' %}" class="btn btn-secondary">Volver a la búsqueda</a>
