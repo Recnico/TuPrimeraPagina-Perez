@@ -1,5 +1,6 @@
 {% extends 'propiedades/base.html' %}
 {% load static %}
+{% load humanize %} {# Para formatear números grandes como el precio #}
 
 {% block title %}Inicio - Chiletop Corretaje de Propiedades{% endblock %}
 
@@ -78,10 +79,23 @@
                         {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">{{ venta.direccion }}</h5>
-                            {# Asegúrate de que tu modelo Venta tenga una descripción si quieres mostrarla #}
-                            {# <p class="card-text">{{ venta.descripcion|truncatechars:100 }}</p> #}
-                            <p class="card-text"><strong>Precio:</strong> ${{ venta.precio|floatformat:0 }}</p>
+                            <p class="card-text"><strong>Precio:</strong> ${{ venta.precio|floatformat:0|intcomma }}</p>
                             <p class="card-text text-muted">Venta</p>
+                            
+                            {# --- NUEVOS DATOS DESTACADOS PARA VENTA --- #}
+                            <ul class="list-unstyled small mb-2">
+                                {% if venta.habitaciones %}
+                                    <li><i class="bi bi-door-open-fill me-1"></i> Habitaciones: {{ venta.habitaciones }}</li>
+                                {% endif %}
+                                {% if venta.banios %}
+                                    <li><i class="bi bi-droplet-fill me-1"></i> Baños: {{ venta.banios }}</li>
+                                {% endif %}
+                                {% if venta.estacionamientos is not None %}
+                                    <li><i class="bi bi-car-fill me-1"></i> Estacionamientos: {{ venta.estacionamientos }}</li>
+                                {% endif %}
+                            </ul>
+                            {# --- FIN NUEVOS DATOS --- #}
+
                             <a href="{% url 'detalle_venta' pk=venta.pk %}" class="btn btn-outline-primary btn-sm">Ver Detalles</a>
                         </div>
                     </div>
@@ -99,10 +113,23 @@
                         {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">{{ arriendo.direccion }}</h5>
-                            {# Asegúrate de que tu modelo Arriendo tenga una descripción si quieres mostrarla #}
-                            {# <p class="card-text">{{ arriendo.descripcion|truncatechars:100 }}</p> #}
-                            <p class="card-text"><strong>Precio Mensual:</strong> ${{ arriendo.precio_mensual|floatformat:0 }}</p>
+                            <p class="card-text"><strong>Precio Mensual:</strong> ${{ arriendo.precio_mensual|floatformat:0|intcomma }}</p>
                             <p class="card-text text-muted">Arriendo</p>
+
+                            {# --- NUEVOS DATOS DESTACADOS PARA ARRIENDO --- #}
+                            <ul class="list-unstyled small mb-2">
+                                {% if arriendo.habitaciones %}
+                                    <li><i class="bi bi-door-open-fill me-1"></i> Habitaciones: {{ arriendo.habitaciones }}</li>
+                                {% endif %}
+                                {% if arriendo.banios %}
+                                    <li><i class="bi bi-droplet-fill me-1"></i> Baños: {{ arriendo.banios }}</li>
+                                {% endif %}
+                                {% if arriendo.estacionamientos is not None %}
+                                    <li><i class="bi bi-car-fill me-1"></i> Estacionamientos: {{ arriendo.estacionamientos }}</li>
+                                {% endif %}
+                            </ul>
+                            {# --- FIN NUEVOS DATOS --- #}
+
                             <a href="{% url 'detalle_arriendo' pk=arriendo.pk %}" class="btn btn-outline-primary btn-sm">Ver Detalles</a>
                         </div>
                     </div>
@@ -120,7 +147,6 @@
 
     {# WhatsApp Floating Button - Colocado dentro de block content #}
     <a href="https://wa.me/56973084594?text=Hola%2C%20estoy%20interesado%20en%20una%20propiedad%20que%20vi%20en%20su%20web." target="_blank" class="whatsapp-float">
-        {# SOLUCIÓN: Elegimos una sola versión del logo y de la ruta #}
         <img src="{% static 'propiedades/img/whatsapp_logo.png' %}" alt="WhatsApp">
     </a>
 
@@ -149,7 +175,6 @@
     }
 
     .whatsapp-float img {
-        {# SOLUCIÓN: Elegimos una sola versión de las dimensiones #}
         width: 65px; /* Tamaño del logo dentro del círculo */
         height: 65px;
     }
