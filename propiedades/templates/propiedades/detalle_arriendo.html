@@ -1,115 +1,141 @@
 {# propiedades/templates/propiedades/detalle_arriendo.html #}
-
 {% extends 'propiedades/base.html' %}
 {% load static %}
+{% load humanize %} {# Para formatear números grandes como el precio #}
 
-{% block title %}Detalle Arriendo - {{ arriendo.direccion }}{% endblock %} {# Agregado un título específico para la página #}
+{% block title %}Detalle Arriendo - {{ arriendo.direccion }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4"> {# Usamos container para alinear el contenido con el resto de la página #}
+<div class="arriendo-detail container mt-4"> {# Usamos container para alinear el contenido con el resto de la página #}
     <h2 class="mb-4">Detalles de la Propiedad en Arriendo: {{ arriendo.direccion }}</h2>
 
     <div class="card mb-4 shadow-sm">
         <div class="card-body">
-            <p class="card-text"><strong>Precio Mensual:</strong> <span class="text-success">${{ arriendo.precio_mensual|floatformat:0 }}</span></p>
-            <p class="card-text"><strong>Descripción:</strong> {{ arriendo.descripcion|safe|default:"No hay descripción disponible." }}</p>
-            <p class="card-text"><strong>Dormitorios:</strong> {{ arriendo.dormitorios|default:"N/A" }}</p> {# Agregado default en caso de que sea nulo #}
-            <p class="card-text"><strong>Baños:</strong> {{ arriendo.banos|default:"N/A" }}</p> {# Agregado default #}
-            <p class="card-text"><strong>Estacionamientos:</strong> {{ arriendo.estacionamientos|default:"N/A" }}</p> {# Agregado default #}
-            <p class="card-text">
-                <strong>Corredor:</strong>
-                {% if arriendo.corredor %} {# Asumo que el campo es 'corredor' en minúscula, como en la vista de búsqueda de arriendo #}
-                    {{ arriendo.corredor.nombre }} (Tel: {{ arriendo.corredor.telefono }}, Email: {{ arriendo.corredor.correo }})
-                {% else %}
-                    No asignado
-                {% endif %}
-            </p>
+            <p class="card-text"><strong>Precio Mensual:</strong> <span class="text-success">${{ arriendo.precio_mensual|floatformat:0|intcomma }}</span></p>
+            <p class="card-text"><strong>Corredor:</strong> {{ arriendo.Corredor.nombre }} (Tel: {{ arriendo.Corredor.telefono }})</p>
+            {% if arriendo.Corredor.correo %} {# Muestra el correo si existe #}
+                <p class="card-text"><strong>Email Corredor:</strong> {{ arriendo.Corredor.correo }}</p>
+            {% endif %}
+
             <p class="card-text">
                 <strong>Publicado por:</strong>
-                {% if arriendo.usuario %}
+                {% if user.is_authenticated and arriendo.usuario %} {# Corregida la sintaxis del if anidado #}
                     {{ arriendo.usuario.username }}
                 {% else %}
                     Usuario desconocido
                 {% endif %}
             </p>
             <p class="card-text"><strong>Fecha de Publicación:</strong> {{ arriendo.fecha_publicacion|date:"d M Y" }}</p>
+
+            {% if arriendo.imagen_principal %}
+                <h3 class="mt-4">Imagen Principal</h3>
+                <img src="{{ arriendo.imagen_principal.url }}" alt="Imagen principal de {{ arriendo.direccion }}" class="img-fluid rounded mb-3" style="max-width: 600px; height: auto; display: block;">
+            {% else %}
+                {# Opcional: Aquí podrías poner una imagen por defecto si no hay imagen principal #}
+                <p>No hay imagen principal disponible.</p>
+            {% endif %}
+
+            <hr>
+
+            {# --- NUEVOS CAMPOS DE DETALLE DE ARRIENDO --- #}
+            <h3 class="mt-4">Características de la Propiedad</h3>
+            <ul class="list-group list-group-flush mb-4">
+                {% if arriendo.metros_cuadrados %}
+                    <li class="list-group-item"><strong>Metros Cuadrados:</strong> {{ arriendo.metros_cuadrados }} m²</li>
+                {% endif %}
+                {% if arriendo.habitaciones %}
+                    <li class="list-group-item"><strong>Habitaciones:</strong> {{ arriendo.habitaciones }}</li>
+                {% endif %}
+                {% if arriendo.banios %}
+                    <li class="list-group-item"><strong>Baños:</strong> {{ arriendo.banios }}</li>
+                {% endif %}
+                {% if arriendo.estacionamientos is not None %} {# Usar is not None para que 0 se muestre #}
+                    <li class="list-group-item"><strong>Estacionamientos:</strong> {{ arriendo.estacionamientos }}</li>
+                {% endif %}
+                {% if arriendo.orientacion %}
+                    <li class="list-group-item"><strong>Orientación:</strong> {{ arriendo.orientacion }}</li>
+                {% endif %}
+                {# Usamos iconos de Bootstrap para 'Acepta Mascotas'. Asegúrate de tener Bootstrap Icons en base.html si quieres verlos. #}
+                <li class="list-group-item"><strong>Acepta Mascotas:</strong> {% if arriendo.acepta_mascotas %}Sí <i class="bi bi-check-circle-fill text-success"></i>{% else %}No <i class="bi bi-x-circle-fill text-danger"></i>{% endif %}</li>
+                {% if arriendo.disponible_desde %}
+                    <li class="list-group-item"><strong>Disponible Desde:</strong> {{ arriendo.disponible_desde|date:"d M Y" }}</li>
+                {% endif %}
+            </ul>
+
+            {% if arriendo.descripcion_detallada %}
+                <h3 class="mt-4">Descripción Detallada</h3>
+                <div class="card p-3 mb-4 bg-light">
+                    {# ¡IMPORTANTE! Usar |safe para renderizar el contenido HTML de CKEditor #}
+                    {{ arriendo.descripcion_detallada|safe }}
+                </div>
+            {% endif %}
+            {# --- FIN NUEVOS CAMPOS --- #}
+
         </div>
     </div>
 
-    {% if arriendo.imagen_principal %}
-        <h3 class="mt-4 mb-3">Imagen Principal</h3>
-        <div class="text-center mb-4">
-            <img src="{{ arriendo.imagen_principal.url }}" class="img-fluid rounded shadow-sm" alt="Imagen principal de {{ arriendo.direccion }}" style="max-height: 500px; object-fit: cover;">
-        </div>
-    {% else %}
-        <p class="alert alert-info">No hay imagen principal disponible para esta propiedad.</p>
-    {% endif %}
-
-    {# BOTÓN DE EDICIÓN PARA ARRIENDO #}
-    {# LA LÍNEA CRÍTICA CORREGIDA AQUÍ: SE ELIMINAN LOS PARÉNTESIS EXTERNOS #}
-    {% if user.is_authenticated and user == arriendo.usuario or user.is_superuser %}
-        <div class="text-center my-4">
-            <a href="{% url 'editar_arriendo' pk=arriendo.pk %}" class="btn btn-warning btn-lg">
-                Editar Publicación de Arriendo
-            </a>
-        </div>
-    {% endif %}
-
-    <h3 class="mt-4 mb-3">Galería de Imágenes</h3>
-    {% if arriendo.get_gallery_images %}
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"> {# Usando grid de Bootstrap para la galería #}
-            {% for imagen in arriendo.get_gallery_images %}
-                <div class="col">
-                    <div class="card h-100 shadow-sm">
-                        <img src="{{ imagen.imagen.url }}" class="card-img-top" alt="{{ imagen.descripcion|default:'Imagen de la propiedad' }}" style="height: 250px; object-fit: cover;">
-                        {% if imagen.descripcion %}
-                            <div class="card-body">
-                                <p class="card-text text-muted small">{{ imagen.descripcion }}</p>
-                            </div>
-                        {% endif %}
-                    </div>
+    <h3 class="mt-4">Galería de Imágenes</h3>
+    {% if imagenes %}
+        <div class="image-gallery">
+            {% for imagen in imagenes %}
+                <div class="gallery-item">
+                    <img src="{{ imagen.imagen.url }}" alt="{{ imagen.descripcion|default:'Imagen de la propiedad' }}">
+                    {% if imagen.descripcion %}
+                        <p class="image-description">{{ imagen.descripcion }}</p>
+                    {% endif %}
                 </div>
             {% endfor %}
         </div>
     {% else %}
-        <p class="alert alert-info">No hay imágenes adicionales en la galería para esta propiedad.</p>
+        <p class="alert alert-info mt-3">No hay imágenes adicionales en la galería para esta propiedad.</p>
     {% endif %}
 
-    <div class="mt-5 text-center">
-        <a href="javascript:history.back()" class="btn btn-secondary">Volver</a>
-        {# O si prefieres volver a la página de búsqueda de arriendos: #}
-        {# <a href="{% url 'buscar_arriendo' %}" class="btn btn-secondary">Volver a Buscar Arriendos</a> #}
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <a href="{% url 'buscar_arriendo' %}" class="btn btn-secondary">Volver a la búsqueda</a>
+        {# Mostrar botones de edición/eliminación solo al usuario dueño, staff o superusuario #}
+        {% if user.is_authenticated and user == arriendo.usuario or user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}
+            <a href="{% url 'editar_arriendo' pk=arriendo.pk %}" class="btn btn-warning">Editar Propiedad</a>
+            <a href="{% url 'eliminar_arriendo' pk=arriendo.pk %}" class="btn btn-danger">Eliminar Propiedad</a>
+        {% endif %}
     </div>
+
 </div>
 
-{% endblock %}
-
-{% block extra_css %}
-{# Si estos estilos no están en base.html, agrégalos aquí. Si ya están en base.html, no es necesario duplicarlos. #}
+{# Puedes mantener o añadir tus propios estilos CSS aquí, o moverlos a un archivo CSS estático #}
 <style>
-    .arriendo-detail img {
+    /* Estilos para las listas de características */
+    .arriendo-detail .list-group-item {
+        font-size: 1.1rem;
+    }
+    .arriendo-detail .list-group-item strong {
+        color: #343a40; /* Color oscuro para las etiquetas */
+    }
+
+    /* Estilos para la galería de imágenes */
+    .image-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    .gallery-item {
+        border: 1px solid #ddd;
         border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
     }
-
-    /* Estilos para el botón de edición si no usas las clases btn-warning/btn-lg de Bootstrap */
-    /* .btn-custom-edit {
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: #ffc107;
-        color: #343a40;
-        text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
-        transition: background-color 0.3s ease;
+    .gallery-item img {
+        max-width: 100%;
+        height: 200px; /* Altura fija para las imágenes de la galería */
+        object-fit: cover; /* Ajusta la imagen sin distorsionarla */
+        display: block;
+        margin: 0 auto;
     }
-    .btn-custom-edit:hover {
-        background-color: #e0a800;
-    } */
-
-    /* Estilos para la galería de imágenes (ya usamos clases de Bootstrap para el grid) */
-    .card-img-top {
-        border-top-left-radius: calc(0.25rem - 1px); /* Ajuste para el border-radius de Bootstrap */
-        border-top-right-radius: calc(0.25rem - 1px);
+    .image-description {
+        padding: 10px;
+        font-size: 0.9em;
+        color: #555;
     }
 </style>
-{% endblock extra_css %}
+{% endblock content %}

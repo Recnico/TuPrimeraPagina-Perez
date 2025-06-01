@@ -39,11 +39,24 @@ class VentaForm(forms.ModelForm):
 class ArriendoForm(forms.ModelForm):
     class Meta:
         model = Arriendo
-        fields = ['direccion', 'precio_mensual', 'imagen_principal', 'Corredor', 'destacada']
+        fields = [
+            'direccion',
+            'precio_mensual',
+            'imagen_principal',
+            'Corredor',
+            'destacada',
+            'descripcion_detallada',  
+            'metros_cuadrados',       
+            'habitaciones',           
+            'banios',                 
+            'estacionamientos',       
+            'orientacion',            
+            'acepta_mascotas',        
+            'disponible_desde',       
+        ]
         widgets = {
-            'descripcion': CKEditorUploadingWidget(), # Usa este si quieres upload de imágenes
-            # O usa solo CKEditorWidget() si no necesitas subir imágenes en el editor
-            # 'descripcion': CKEditorWidget(),
+            'descripcion_detallada': CKEditorUploadingWidget(), # Usa CKEditor para este campo
+            'disponible_desde': DateInput(attrs={'type': 'date'}), # Muestra un selector de fecha
         }
 
 class BuscarPropiedadForm(forms.Form):

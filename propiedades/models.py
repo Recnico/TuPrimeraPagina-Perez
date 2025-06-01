@@ -36,12 +36,12 @@ class Venta(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ventas_publicadas')
     fecha_publicacion = models.DateField(auto_now_add=True)
 
-    # --- NUEVOS CAMPOS ---
+   
     descripcion_detallada = RichTextUploadingField(
         verbose_name="Descripción Detallada",
         blank=True,
         null=True,
-        help_text="Proporciona una descripción completa y detallada de la propiedad. Puedes usar formato enriquecido y añadir imágenes."
+        help_text="Proporciona una descripción completa y detallada de la propiedad."
     )
     metros_cuadrados = models.PositiveIntegerField(
         verbose_name="Metros Cuadrados",
@@ -102,6 +102,52 @@ class Arriendo(models.Model):
     destacada = models.BooleanField(default=False)
     usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='arriendos_publicados')
     fecha_publicacion = models.DateField(auto_now_add=True)
+     
+    descripcion_detallada = RichTextUploadingField(
+        verbose_name="Descripción Detallada",
+        blank=True,
+        null=True,
+        help_text="Proporciona una descripción completa y detallada de la propiedad en arriendo."
+    )
+    metros_cuadrados = models.PositiveIntegerField(
+        verbose_name="Metros Cuadrados",
+        blank=True,
+        null=True,
+        help_text="Superficie total en metros cuadrados."
+    )
+    habitaciones = models.PositiveSmallIntegerField(
+        verbose_name="Número de Habitaciones",
+        blank=True,
+        null=True
+    )
+    banios = models.PositiveSmallIntegerField(
+        verbose_name="Número de Baños",
+        blank=True,
+        null=True
+    )
+    estacionamientos = models.PositiveSmallIntegerField(
+        verbose_name="Estacionamientos",
+        default=0,
+        blank=True,
+        null=True
+    )
+    orientacion = models.CharField(
+        max_length=50,
+        verbose_name="Orientación",
+        blank=True,
+        null=True,
+        help_text="Ej: Norte, Sur, Oriente, Poniente."
+    )
+    acepta_mascotas = models.BooleanField(
+        verbose_name="Acepta Mascotas",
+        default=False
+    )
+    disponible_desde = models.DateField(
+        verbose_name="Disponible Desde",
+        blank=True,
+        null=True,
+        help_text="Fecha a partir de la cual la propiedad está disponible para arriendo."
+    )
 
     def __str__(self):
         return self.direccion
