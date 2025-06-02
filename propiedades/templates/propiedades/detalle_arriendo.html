@@ -1,16 +1,12 @@
 {# propiedades/templates/propiedades/detalle_arriendo.html #}
-
 {% extends 'propiedades/base.html' %}
 {% load static %}
-{% load humanize %} {# Para formatear números grandes como el precio #}
-{% load crispy_forms_tags %} {# ¡IMPORTA ESTO para usar crispy forms en el formulario de contacto! #}
-
+{% load humanize %} 
+{% load crispy_forms_tags %}
 {% block title %}Detalle Arriendo - {{ arriendo.direccion }}{% endblock %}
-
 {% block content %}
 <div class="container mt-4">
     <h2 class="mb-4">Detalles de la Propiedad en Arriendo: {{ arriendo.direccion }}</h2>
-
     <div class="card mb-4 shadow-sm">
         <div class="card-body">
             <p class="card-text"><strong>Precio Mensual:</strong> <span class="text-success">${{ arriendo.precio_mensual|floatformat:0|intcomma }}</span></p>
@@ -18,7 +14,6 @@
             {% if arriendo.Corredor.correo %}
                 <p class="card-text"><strong>Email Corredor:</strong> {{ arriendo.Corredor.correo }}</p>
             {% endif %}
-            
             <p class="card-text">
                 <strong>Publicado por:</strong>
                 {% if arriendo.usuario %}
@@ -28,7 +23,6 @@
                 {% endif %}
             </p>
             <p class="card-text"><strong>Fecha de Publicación:</strong> {{ arriendo.fecha_publicacion|date:"d M Y" }}</p>
-
             {% if arriendo.imagen_principal %}
                 <h3 class="mt-4 mb-3">Imagen Principal</h3>
                 <div class="text-center mb-4">
@@ -37,10 +31,7 @@
             {% else %}
                 <p class="alert alert-info">No hay imagen principal disponible para esta propiedad.</p>
             {% endif %}
-
             <hr>
-
-            {# --- NUEVOS CAMPOS DE DETALLE DE ARRIENDO --- #}
             <h3 class="mt-4">Características de la Propiedad</h3>
             <ul class="list-group list-group-flush mb-4">
                 {% if arriendo.metros_cuadrados %}
@@ -63,18 +54,14 @@
                     <li class="list-group-item"><strong>Disponible Desde:</strong> {{ arriendo.disponible_desde|date:"d M Y" }}</li>
                 {% endif %}
             </ul>
-
             {% if arriendo.descripcion_detallada %}
                 <h3 class="mt-4">Descripción Detallada</h3>
                 <div class="card p-3 mb-4 bg-light">
                     {{ arriendo.descripcion_detallada|safe }} 
                 </div>
             {% endif %}
-            {# --- FIN NUEVOS CAMPOS --- #}
-
         </div>
     </div>
-
     <h3 class="mt-4 mb-3">Galería de Imágenes</h3>
     {% if imagenes %}
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
@@ -94,8 +81,6 @@
     {% else %}
         <p class="alert alert-info">No hay imágenes adicionales en la galería para esta propiedad.</p>
     {% endif %}
-
-    {# --- FORMULARIO DE CONTACTO PARA SOLICITUD DE INFORMACIÓN --- #}
     <div class="card shadow-sm mt-4">
         <div class="card-header bg-info text-white">
             <h4 class="mb-0">¿Interesado en esta propiedad? ¡Contáctanos!</h4>
@@ -103,13 +88,11 @@
         <div class="card-body">
             <form method="post" novalidate>
                 {% csrf_token %}
-                {{ contacto_form|crispy }} {# ¡CORREGIDO! Aplicando el filtro |crispy aquí #}
+                {{ contacto_form|crispy }} 
                 <button type="submit" class="btn btn-primary mt-3">Enviar Solicitud</button>
             </form>
         </div>
     </div>
-    {# --- FIN FORMULARIO DE CONTACTO --- #}
-
     <div class="d-flex justify-content-between align-items-center mt-4">
         <a href="{% url 'buscar_arriendo' %}" class="btn btn-secondary">Volver a la búsqueda</a>
         {% if user.is_authenticated and user == arriendo.usuario or user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}
@@ -117,23 +100,17 @@
             <a href="{% url 'eliminar_arriendo' pk=arriendo.pk %}" class="btn btn-danger">Eliminar Publicación</a>
         {% endif %}
     </div>
-
 </div>
-
-{# Puedes mantener o añadir tus propios estilos CSS aquí, o moverlos a un archivo CSS estático #}
 <style>
-    /* Estilos para las listas de características */
     .list-group-item {
         font-size: 1.1rem;
     }
     .list-group-item strong {
         color: #343a40;
     }
-    /* Estilos generales para las tarjetas de imágenes de la galería (ya definidos en el bloque content) */
     .card-img-top {
         border-top-left-radius: calc(0.25rem - 1px);
         border-top-right-radius: calc(0.25rem - 1px);
     }
-    /* Asegúrate de que los estilos para .image-gallery, .gallery-item, .gallery-item img, .image-description también estén definidos si no vienen de Bootstrap */
 </style>
 {% endblock content %}

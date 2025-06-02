@@ -1,12 +1,10 @@
 {# propiedades/templates/propiedades/editarPerfil.html #}
 {% extends "propiedades/base.html" %}
-{% load static %} {# Asegúrate de cargar la etiqueta static #}
+{% load static %} 
 {% load crispy_forms_tags %}
-
 {% block title %}
     Editar Perfil
 {% endblock title %}
-
 {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -18,8 +16,6 @@
                 <div class="card-body">
                     <form method="post" novalidate enctype="multipart/form-data">
                         {% csrf_token %}
-
-                        {# Mostrar errores generales del formulario (no asociados a un campo específico) #}
                         {% if form.non_field_errors %}
                             <div class="alert alert-danger" role="alert">
                                 {% for error in form.non_field_errors %}
@@ -27,38 +23,21 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-
                         <h3>Información del Usuario</h3>
-                        {# Renderiza los campos del formulario de usuario con crispy forms #}
-                        {# Excluimos el campo 'password' para manejarlo por separado #}
                         {{ form|crispy }}
-
-                        {# Sección para el Avatar #}
                         <h3 class="mt-4">Avatar</h3>
-                        {# La lógica de la vista (get_or_create) asegura que user.avatar siempre existe y tiene una imagen (la subida o la por defecto). #}
-                        {# Por lo tanto, siempre podemos usar user.avatar.imagen.url directamente. #}
-                        {% if user.is_authenticated and user.avatar %} {# Esta condición es buena para asegurar que el usuario está logueado y tiene un objeto avatar #}
+                        {% if user.is_authenticated and user.avatar %} 
                             <div class="mb-3 text-center">
                                 <p class="mb-2">Avatar actual:</p>
-                                {# Usa user.avatar.imagen.url para mostrar la imagen, ya sea la subida o la por defecto #}
                                 <img src="{{ user.avatar.imagen.url }}" alt="Avatar" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #007bff;">
                             </div>
                         {% else %}
-                            {# Este bloque SOLO se ejecutaría si user.avatar no existe (lo cual debería evitarse con get_or_create en la vista) #}
-                            {# O si el usuario NO está autenticado (aunque la vista tiene @login_required) #}
-                            {# Si necesitas un fallback, y este default_avatar es un *archivo estático*, lo puedes dejar. #}
-                            {# Pero si es el default de tu modelo ImageField, ¡siempre será un archivo media! #}
                             <div class="mb-3 text-center">
                                 <p class="text-muted">No tienes un avatar asignado o hay un problema de carga.</p>
-                                {# Si tu default_avatar.png SÓLO está en la carpeta MEDIA, entonces esta línea es incorrecta. #}
-                                {# Si lo tienes duplicado en STATIC, entonces funcionaría como fallback estático. #}
                                 <img src="{% static 'images/avatares/default_avatar.png' %}" alt="Avatar por defecto" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #ccc;">
                             </div>
                         {% endif %}
-
-                        {# Renderiza el formulario del avatar con crispy forms #}
                         {{ avatar_form|crispy }}
-
                         <hr class="my-4">
                         <div class="d-flex justify-content-between align-items-center">
                             <button type="submit" class="btn btn-primary btn-lg">Guardar Cambios</button>

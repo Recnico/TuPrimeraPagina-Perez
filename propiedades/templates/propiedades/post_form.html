@@ -1,8 +1,7 @@
 {# propiedades/templates/propiedades/post_form.html #}
 {% extends 'propiedades/base.html' %}
 {% load static %}
-{% load crispy_forms_tags %} {# Para renderizar formularios con Bootstrap #}
-
+{% load crispy_forms_tags %} 
 {% block content %}
 <div class="container mt-4">
     <div class="row justify-content-center">
@@ -16,7 +15,7 @@
                 <div class="card-body">
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
-                        {{ form|crispy }} {# Renderiza todos los campos del formulario con crispy forms #}
+                        {{ form|crispy }}
                         
                         <div class="d-flex justify-content-between mt-4">
                             <button type="submit" class="btn btn-primary btn-lg">
@@ -31,8 +30,5 @@
     </div>
 </div>
 
-{# CKEditor requiere un script para inicializarlo, pero crispy forms suele manejar esto si está configurado #}
-{# Si el editor no aparece, puedes necesitar incluir el script de CKEditor aquí o en base.html #}
-{{ form.media }} {# Esto es importante para que CKEditor se inicialice correctamente #}
-
+{{ form.media }} 
 {% endblock content %}

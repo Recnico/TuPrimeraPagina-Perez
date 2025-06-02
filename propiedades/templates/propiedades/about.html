@@ -1,27 +1,20 @@
 {% extends 'propiedades/base.html' %}
 {% load static %}
-
 {% block title %}Acerca de Mí - Nicolás Pérez Cerda{% endblock %} 
 {% block content %} 
 <div class="container mt-5"> 
     <div class="row justify-content-center"> 
         <div class="col-lg-8"> 
-            <div class="card shadow-lg border-0 p-4"> {# Una tarjeta de Bootstrap para un diseño agradable #}
-                <div class="text-center mb-4"> {# Centra el contenido dentro de esta div #}
-                    {# Aquí puedes poner una foto de perfil. Asegúrate de tener una imagen en tu carpeta static. #}
+            <div class="card shadow-lg border-0 p-4"> 
+                <div class="text-center mb-4"> 
                     <img src="{% static 'propiedades/img/tu_foto.jpg' %}" alt="Foto de Perfil" class="rounded-circle img-fluid" style="width: 250px; height: 250px; object-fit: cover;">
                     <h2 class="mt-3">Nicolás Pérez Cerda</h2> 
-                    <p class="text-muted">Desarrollador Web - Curso Python 75900</p> {# Tu rol o título #}
+                    <p class="text-muted">Desarrollador Web - Curso Python 75900</p> 
                 </div>
-
                 <p class="lead">¡Hola! Soy Nicolás, un apasionado tecnología en formación. Este proyecto es el resultado de la practica en curso de Python 75900, donde he adquirido las bases para construir aplicaciones web  con Django.</p>
-
                 <p>Me he enfocado en crear una plataforma para la gestión de propiedades, ya que mi familia tiene una Inmobiliaria. </p>
-
                 <p>Siempre estoy abierto a nuevas oportunidades y desafíos. Si tienes alguna pregunta o quieres conectar, no dudes en contactarme.  </p>
-
-                <hr> {# Línea divisoria #}
-
+                <hr>
                 <div class="text-center">
                     <h5>Contacto y Redes</h5>
                     <p>

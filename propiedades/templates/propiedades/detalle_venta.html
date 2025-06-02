@@ -1,13 +1,11 @@
 {# propiedades/templates/propiedades/detalle_venta.html #}
 {% extends 'propiedades/base.html' %}
-{% load static %} {# <-- Asegúrate de cargar static si vas a usar {% static %} para alguna imagen #}
-{% load humanize %} {# Para formatear números grandes como el precio #}
-{% load crispy_forms_tags %} {# ¡IMPORTA ESTO para usar crispy forms! #}
-
+{% load static %} 
+{% load humanize %} 
+{% load crispy_forms_tags %}
 {% block content %}
 <div class="venta-detail container mt-4"> {# Agregamos 'container' para mejor centrado y margen superior #}
     <h2 class="mb-3">Detalles de la Propiedad: {{ venta.direccion }}</h2>
-
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <p class="card-text"><strong>Precio:</strong> <span class="text-success">${{ venta.precio|floatformat:0|intcomma }}</span></p>
@@ -15,7 +13,6 @@
             {% if venta.Corredor.correo %} {# Muestra el correo si existe #}
                 <p class="card-text"><strong>Email Corredor:</strong> {{ venta.Corredor.correo }}</p>
             {% endif %}
-            
             <p class="card-text">
                 <strong>Publicado por:</strong>
                 {% if venta.usuario %}
@@ -25,7 +22,6 @@
                 {% endif %}
             </p>
             <p class="card-text"><strong>Fecha de Publicación:</strong> {{ venta.fecha_publicacion|date:"d M Y" }}</p> 
-
             {% if venta.imagen_principal %}
                 <h3 class="mt-4">Imagen Principal</h3>
                 <img src="{{ venta.imagen_principal.url }}" alt="Imagen principal de {{ venta.direccion }}" class="img-fluid rounded mb-3" style="max-width: 600px; height: auto; display: block;">
@@ -33,10 +29,7 @@
                 {# Opcional: Aquí podrías poner una imagen por defecto si no hay imagen principal #}
                 <p>No hay imagen principal disponible.</p> 
             {% endif %}
-
             <hr>
-
-            {# --- NUEVOS CAMPOS DE DETALLE DE VENTA --- #}
             <h3 class="mt-4">Características de la Propiedad</h3>
             <ul class="list-group list-group-flush mb-4">
                 {% if venta.metros_cuadrados %}
@@ -64,7 +57,6 @@
             {% if venta.descripcion_detallada %}
                 <h3 class="mt-4">Descripción Detallada</h3>
                 <div class="card p-3 mb-4 bg-light">
-                    {# ¡IMPORTANTE! Usar |safe para renderizar el contenido HTML de CKEditor #}
                     {{ venta.descripcion_detallada|safe }} 
                 </div>
             {% endif %}
@@ -93,9 +85,9 @@
         <h4 class="mb-0">¿Interesado en esta propiedad? ¡Contáctanos!</h4>
     </div>
     <div class="card-body">
-        <form method="post" novalidate> {# quitamos enctype para este formulario sin archivos #}
+        <form method="post" novalidate> 
             {% csrf_token %}
-            {{ contacto_form|crispy }} {# Renderiza el formulario con crispy forms #}
+            {{ contacto_form|crispy }}
             <button type="submit" class="btn btn-primary mt-3">Enviar Solicitud</button>
         </form>
     </div>

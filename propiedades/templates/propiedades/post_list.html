@@ -1,7 +1,7 @@
 {# propiedades/templates/propiedades/post_list.html #}
 {% extends 'propiedades/base.html' %}
 {% load static %}
-{% load humanize %} {# Para formatear números o fechas si es necesario #}
+{% load humanize %} 
 
 {% block title %}Listado de Posts{% endblock %}
 
@@ -38,12 +38,10 @@
                                     {% endif %}
                                     <p class="card-text"><small class="text-muted">Publicado el {{ post.fecha_publicacion|date:"d M Y" }} por {% if post.autor %}{{ post.autor.username }}{% else %}Anónimo{% endif %}</small></p>
                                     
-                                    {# Muestra un extracto del contenido, sin las etiquetas HTML #}
                                     <p class="card-text">{{ post.contenido|striptags|truncatechars:200 }}</p>
                                     
                                     <a href="{% url 'detalle_post' pk=post.pk %}" class="btn btn-primary btn-sm mt-2">Leer más</a>
 
-                                    {# Botones de edición/eliminación (solo para el autor, staff o superusuario) #}
                                     {% if user.is_authenticated and user == post.autor or user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}
                                         <a href="{% url 'editar_post' pk=post.pk %}" class="btn btn-warning btn-sm mt-2 ms-2">Editar</a>
                                         <a href="{% url 'eliminar_post' pk=post.pk %}" class="btn btn-danger btn-sm mt-2 ms-2">Eliminar</a>
@@ -56,7 +54,6 @@
             {% endfor %}
         </div>
         
-        {# Paginación (si paginate_by está definido en la CBV) #}
         {% if is_paginated %}
             <nav aria-label="Page navigation" class="mt-4">
                 <ul class="pagination justify-content-center">

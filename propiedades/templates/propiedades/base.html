@@ -5,14 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Mi Corretaje{% endblock %}</title>
-    
-    {# Enlace a Bootstrap CSS #}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    {# Enlace a Bootstrap Icons CSS  #}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
-    
-    {# Bloque para CSS adicional de plantillas hijas y estilos generales de base.html #}
     {% block extra_css %}
     <style>
         body {
@@ -21,144 +15,144 @@
         .navbar-brand {
             font-weight: bold;
             font-size: 1.4rem;
-            /* Opcional: Cambia el color del texto del logo para que coincida con tu marca si no es blanco */
-            /* color: #FF6B00 !important; /* Ejemplo: Naranja de SantiagoLive */
         }
         footer {
-            background-color: #f1f1f1;
-            padding: 1rem;
-            text-align: center;
-            font-size: 0.9rem;
-        }
-        /* Estilos para asegurar la alineación vertical de TODOS los elementos nav-item */
+         background-color: #f1f1f1;
+         padding: 1.5rem 1rem;
+         font-size: 0.9rem;
+          margin-top: auto;
+          position: fixed;
+         bottom: 0; 
+         left: 0; 
+         width: 100vw;
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         box-sizing: border-box; 
+         z-index: 999;
+}
         .navbar-nav .nav-item {
             display: flex;
             align-items: center;
         }
-
-        /* Asegura que el nav-link también se alinee si contiene múltiples elementos (nombre y avatar) */
         .navbar-nav .nav-item .nav-link {
             display: flex;
             align-items: center;
         }
-
-        /* Estilo para el avatar */
         .avatar-navbar {
             margin-left: 0.5rem;
             flex-shrink: 0;
         }
-
-        /* Ajuste específico para el botón Cerrar Sesión si no se alinea bien */
         .navbar-nav .nav-item form .btn {
-            /* Puedes añadir un ajuste fino si el botón sigue desalineado */
-            /* Por ejemplo, un margin-top o transform para desplazarlo */
-            /* vertical-align: middle; */ /* No siempre necesario con flexbox */
-            /* transform: translateY(1px); */ /* Ajuste de 1px hacia abajo, prueba esto si es necesario */
         }
-
-        /* Estilos para el carrusel (asegúrate de que home.html no los duplique) */
         .carousel-item img {
-            height: 350px; /* Ajusta este valor para controlar la altura del carrusel */
-            object-fit: cover; /* Asegura que la imagen cubra el área sin distorsionarse */
-            width: 100%;
+            height: 350px;
+            object-fit: cover;
         }
         .carousel {
-            border-radius: 0.5rem; /* Esquinas redondeadas para el carrusel */
-            overflow: hidden; /* Asegura que las imágenes se recorten dentro del border-radius */
+            border-radius: 0.5rem;
+            overflow: hidden;
         }
-        /* Estilos para las leyendas del carrusel */
         .carousel-caption {
-            background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente para mejor legibilidad */
+            background-color: rgba(0, 0, 0, 0.5);
             padding: 15px;
             border-radius: 5px;
-            bottom: 20px; /* Separar un poco del borde inferior */
+            bottom: 20px;
             left: 50%;
-            transform: translateX(-50%); /* Centrar horizontalmente */
-            width: 80%; /* Ancho de la leyenda */
-            max-width: 600px; /* Ancho máximo para la leyenda */
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 600px;
             text-align: center;
         }
         .carousel-caption h5 {
-            color: #ffffff; /* Texto blanco para títulos */
-            font-size: 1.5rem; /* Tamaño de fuente del título */
+            color: #ffffff;
+            font-size: 1.5rem;
             margin-bottom: 0.5rem;
         }
         .carousel-caption p {
-            color: #f8f9fa; /* Texto blanco ligeramente más oscuro para descripción */
-            font-size: 1rem; /* Tamaño de fuente de la descripción */
+            color: #f8f9fa;
+            font-size: 1rem;
             margin-bottom: 1rem;
         }
         .carousel-caption .btn {
-            background-color: #FF6B00; /* Naranja inspirado en SantiagoLive para el botón */
+            background-color: #FF6B00;
             border-color: #FF6B00;
             color: white;
             font-weight: bold;
         }
         .carousel-caption .btn:hover {
-            background-color: #E65A00; /* Naranja más oscuro al pasar el ratón */
+            background-color: #E65A00;
             border-color: #E65A00;
         }
-
-        /* Color de marca para botones primarios globales (no solo en carrusel) */
         .btn-primary {
-            background-color: #FF6B00; /* Naranja inspirado en SantiagoLive */
+            background-color: #FF6B00;
             border-color: #FF6B00;
         }
         .btn-primary:hover {
-            background-color: #E65A00; /* Naranja más oscuro al pasar el ratón */
+            background-color: #E65A00;
             border-color: #E65A00;
         }
-
-        /* Opcional: Estilo para las tarjetas destacadas, bordes redondeados */
         .card {
-            border-radius: 0.5rem; /* Bordes redondeados para las tarjetas de propiedades */
-            overflow: hidden; /* Asegura que las imágenes se recorten dentro del border-radius */
+            border-radius: 0.5rem;
+            overflow: hidden;
         }
         .card-img-top {
             border-top-left-radius: 0.5rem;
             border-top-right-radius: 0.5rem;
         }
-
-        /* Estilos específicos para los mensajes de Django con Bootstrap */
         .messages-container {
-            margin-top: 20px; /* Espacio superior para que no se pegue a la navbar */
-            padding: 0 15px; /* Padding para que no se pegue a los bordes del container */
+            margin-top: 20px;
+            padding: 0 15px;
         }
         .messages-container .alert {
-            margin-bottom: 15px; /* Espacio entre mensajes si hay varios */
+            margin-bottom: 15px;
+        }
+        html {
+            height: 100%;
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        main {
+            flex: 1;
+        }
+        footer {
+        background-color: #f1f1f1;
+        padding: 1rem;
+        font-size: 0.9rem;
+        width: 100vw; 
+        position: relative;
+        left: 0; 
+        display: flex; 
+        justify-content: center;
+        align-items: center; 
+        box-sizing: border-box;
         }
     </style>
-    {% endblock extra_css %} {# <<--- AQUI ESTÁ EL CIERRE DEL BLOQUE extra_css QUE FALTABA #}
-
-</head>
+    {% endblock extra_css %} 
 <body>
-
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3 mb-4">
     <a class="navbar-brand" href="{% url 'home' %}">Chiletop Propiedades</a>
-    
-    {# BOTÓN TOGGLER DE BOOTSTRAP PARA MÓVILES #}
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
-
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-            {# Enlaces de navegación generales (pueden ser accesibles para todos) #}
-            <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Inicio</a></li> {# Agregué el enlace a Inicio aquí #}
+            <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Inicio</a></li> 
             <li class="nav-item"><a class="nav-link" href="{% url 'buscar_venta' %}">Buscar Venta</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'buscar_arriendo' %}">Buscar Arriendo</a></li> {# Asumiendo que tienes una vista para esto #}
+            <li class="nav-item"><a class="nav-link" href="{% url 'buscar_arriendo' %}">Buscar Arriendo</a></li> 
             <li class="nav-item"><a class="nav-link" href="{% url 'listado_posts' %}">Blog</a></li>
             <li class="nav-item"> <a class="nav-link" href="{% url 'about' %}">Acerca de Mí</a></li>
-            {# Lógica para mostrar enlaces de autenticación/admin #}
             {% if user.is_authenticated %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'agregar_arriendo' %}">Agregar Arriendo</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'agregar_venta' %}">Agregar Venta</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'agregar_corredor' %}">Agregar Corredor</a></li>
-                {% if user.is_staff or user.is_superuser %} {# Solo para usuarios staff o superusuarios #}
+                {% if user.is_staff or user.is_superuser %} 
                     <li class="nav-item"><a class="nav-link" href="{% url 'crear_post' %}">Crear Post</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/admin/">Admin</a></li> {# Enlace directo al panel de admin #}    
+                    <li class="nav-item"><a class="nav-link" href="/admin/">Admin</a></li> 
                 {% endif %}
-
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <span>{{ user.username }}</span>
@@ -167,7 +161,7 @@
                         {% endif %}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{% url 'perfil' %}">Mi Perfil</a></li> {# Enlace al perfil del usuario #}
+                        <li><a class="dropdown-item" href="{% url 'perfil' %}">Mi Perfil</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form action="{% url 'cerrar_sesion' %}" method="post" class="m-0">
@@ -181,17 +175,14 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'login' %}">Iniciar Sesión</a>
                 </li>
-                <li class="nav-item"> {# New signup link #}
+                <li class="nav-item"> 
                     <a class="nav-link" href="{% url 'register' %}">Registrarte</a>
                 </li>
             {% endif %}
-            
         </ul>
     </div>
 </nav>
-
-<main class="container"> {# Usamos <main> para semántica y el container para el ancho #}
-    {# Bloque para mostrar mensajes de Django con clases de Bootstrap #}
+<main class="container"> 
     <div class="messages-container">
         {% if messages %}
             {% for message in messages %}
@@ -201,23 +192,16 @@
             {% endfor %}
         {% endif %}
     </div>
-
-    {# Bloque principal para el contenido de las plantillas hijas #}
     {% block content %}
     {% endblock content %}
 </main>
-
-<footer class="mt-5"> {# Footer fuera del main container para que ocupe todo el ancho si quieres #}
-    <p>Proyecto Django - Curso Python 75900 Nicolás Pérez Cerda</p>
+<footer>
+    <div class="container text-center"> 
+        <p class="mb-0">Proyecto Django - Curso Python 75900 Nicolás Pérez Cerda</p> {# mb-0 para quitar margen inferior de p #}
+    </div>
 </footer>
-
-{# Enlace a Bootstrap JS (bundle incluye Popper) #}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
-{# Bloque para JavaScript adicional de plantillas hijas #}
 {% block extra_js %}
-{# Aquí se inyectará el JavaScript adicional de las plantillas hijas #}
-{% endblock extra_js %} {# Cierre del bloque extra_js #}
-
+{% endblock extra_js %}
 </body>
 </html>

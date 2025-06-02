@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User # Asegúrate de importar User
+from django.contrib.auth.models import User 
 import os
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -97,7 +97,7 @@ class Arriendo(models.Model):
     Corredor = models.ForeignKey(Corredor, on_delete=models.CASCADE)
     direccion = models.CharField(max_length=200)
     precio_mensual = models.DecimalField(max_digits=10, decimal_places=0)
-    descripcion = RichTextUploadingField(blank=True, null=True) # Usa RichTextUploadingField para subir imágenes
+    descripcion = RichTextUploadingField(blank=True, null=True) 
     imagen_principal = models.ImageField(upload_to='arriendos/', blank=True, null=True)
     destacada = models.BooleanField(default=False)
     usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='arriendos_publicados')
@@ -198,11 +198,11 @@ class Post(models.Model):
     class Meta:
         verbose_name = "Post del Blog"
         verbose_name_plural = "Posts del Blog"
-        ordering = ['-fecha_publicacion'] # Ordenar por fecha de publicación descendente
+        ordering = ['-fecha_publicacion'] 
 
     def __str__(self):
         return self.titulo
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('detalle_post', kwargs={'pk': self.pk}) # Usaremos 'detalle_post' en nuestras URLs
+        return reverse('detalle_post', kwargs={'pk': self.pk}) 

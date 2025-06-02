@@ -1,8 +1,6 @@
 {% extends "propiedades/base.html" %}
-{% load humanize %} {# Carga el filtro humanize para formatear números #}
-
+{% load humanize %} 
 {% block title %}Confirmar Eliminación{% endblock title %}
-
 {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -24,13 +22,10 @@
                         {% endif %}
                         <li class="list-group-item"><strong>Corredor:</strong> {{ objeto.Corredor.nombre }}</li>
                     </ul>
-
                     <div class="alert alert-warning" role="alert">
                         ¡Atención! Esta acción es irreversible. Una vez eliminada, la propiedad no podrá ser recuperada.
                     </div>
-
                     <p>¿Estás seguro de que deseas eliminar esta propiedad?</p>
-
                     <form method="post" class="d-flex justify-content-between">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger btn-lg">Sí, Eliminar Permanentemente</button>

@@ -1,12 +1,9 @@
 {% extends 'propiedades/base.html' %}
 {% load static %}
 {% load humanize %} {# Para formatear números grandes como el precio #}
-
 {% block title %}Inicio - Chiletop Corretaje de Propiedades{% endblock %}
-
 {% block content %}
   <div class="container mt-4">
-    {# CARRUSEL - Puedes mantenerlo con imágenes estáticas o considerar hacerlo dinámico en el futuro #}
     <div id="carouselExampleIndicators" class="carousel slide mb-4" data-bs-ride="carousel">
       <div class="carousel-indicators">
         <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
@@ -49,8 +46,6 @@
         <span class="visually-hidden">Next</span>
       </button>
     </div>
-
-    {# SECCIÓN DE BIENVENIDA - Mantenemos esta sección ya que es general #}
     <div class="row mb-4">
       <div class="col-md-6">
         <img src="{% static 'propiedades/img/bienvenida_chiletop.png' %}" class="img-fluid rounded shadow-sm" alt="Imagen de Bienvenida">
@@ -62,13 +57,10 @@
         <a href="{% url 'buscar_venta' %}" class="btn btn-primary btn-lg">Buscar Propiedades</a>
       </div>
     </div>
-
-    {# INICIO DE LA SECCIÓN DINÁMICA DE PROPIEDADES DESTACADAS #}
     <h2 class="mb-3 text-center">Propiedades Destacadas</h2> {# Cambié a h2 y centré #}
 
     {% if ventas_destacadas or arriendos_destacados %}
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4"> {# Añadido g-4 para espaciado y mb-4 para margen inferior #}
-            {# Mostrar Propiedades de Venta Destacadas #}
             {% for venta in ventas_destacadas %}
                 <div class="col">
                     <div class="card h-100 shadow-sm">
@@ -81,28 +73,22 @@
                             <h5 class="card-title">{{ venta.direccion }}</h5>
                             <p class="card-text"><strong>Precio:</strong> ${{ venta.precio|floatformat:0|intcomma }}</p>
                             <p class="card-text text-muted">Venta</p>
-                            
-                            {# --- NUEVOS DATOS DESTACADOS PARA VENTA --- #}
                             <ul class="list-unstyled small mb-2">
                                 {% if venta.habitaciones %}
                                     <li><i class="bi bi-door-open-fill me-1"></i> Habitaciones: {{ venta.habitaciones }}</li>
                                 {% endif %}
-                                {% if venta.banios %}
-                                    <li><i class="bi bi-droplet-fill me-1"></i> Baños: {{ venta.banios }}</li>
+                                {% if venta.banios %}Baño
+                                    <li><i class="bi bi-droplet-fill me-1"></i> s: {{ venta.banios }}</li>
                                 {% endif %}
                                 {% if venta.estacionamientos is not None %}
                                     <li><i class="bi bi-car-fill me-1"></i> Estacionamientos: {{ venta.estacionamientos }}</li>
                                 {% endif %}
                             </ul>
-                            {# --- FIN NUEVOS DATOS --- #}
-
                             <a href="{% url 'detalle_venta' pk=venta.pk %}" class="btn btn-outline-primary btn-sm">Ver Detalles</a>
                         </div>
                     </div>
                 </div>
             {% endfor %}
-
-            {# Mostrar Propiedades de Arriendo Destacadas #}
             {% for arriendo in arriendos_destacados %}
                 <div class="col">
                     <div class="card h-100 shadow-sm">
@@ -115,8 +101,6 @@
                             <h5 class="card-title">{{ arriendo.direccion }}</h5>
                             <p class="card-text"><strong>Precio Mensual:</strong> ${{ arriendo.precio_mensual|floatformat:0|intcomma }}</p>
                             <p class="card-text text-muted">Arriendo</p>
-
-                            {# --- NUEVOS DATOS DESTACADOS PARA ARRIENDO --- #}
                             <ul class="list-unstyled small mb-2">
                                 {% if arriendo.habitaciones %}
                                     <li><i class="bi bi-door-open-fill me-1"></i> Habitaciones: {{ arriendo.habitaciones }}</li>
@@ -128,8 +112,6 @@
                                     <li><i class="bi bi-car-fill me-1"></i> Estacionamientos: {{ arriendo.estacionamientos }}</li>
                                 {% endif %}
                             </ul>
-                            {# --- FIN NUEVOS DATOS --- #}
-
                             <a href="{% url 'detalle_arriendo' pk=arriendo.pk %}" class="btn btn-outline-primary btn-sm">Ver Detalles</a>
                         </div>
                     </div>
@@ -139,48 +121,40 @@
     {% else %}
         <p class="text-center alert alert-info">No hay propiedades destacadas disponibles en este momento.</p>
     {% endif %}
-    {# FIN DE LA SECCIÓN DINÁMICA DE PROPIEDADES DESTACADAS #}
-
-    {# Puedes añadir más secciones aquí si las tenías después de las propiedades destacadas #}
-
   </div>
-
-    {# WhatsApp Floating Button - Colocado dentro de block content #}
+ 
     <a href="https://wa.me/56973084594?text=Hola%2C%20estoy%20interesado%20en%20una%20propiedad%20que%20vi%20en%20su%20web." target="_blank" class="whatsapp-float">
         <img src="{% static 'propiedades/img/whatsapp_logo.png' %}" alt="WhatsApp">
     </a>
-
+    
 {% endblock %}
-
 {% block extra_css %}
-{# Este es el ÚNICO block extra_css #}
 <style>
     .whatsapp-float {
         position: fixed;
-        bottom: 20px; /* Distancia desde abajo */
-        right: 20px; /* Distancia desde la derecha */
-        width: 60px; /* Ancho del botón */
-        height: 60px; /* Alto del botón */
-        background-color: #25d366; /* Color de fondo de WhatsApp */
+        bottom: 60px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        background-color: #25d366;
         color: white;
-        border-radius: 50%; /* Hace que sea un círculo */
+        border-radius: 50%;
         text-align: center;
         font-size: 30px;
         box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
-        z-index: 1000; /* Asegura que esté por encima de otros elementos */
-        display: flex; /* Para centrar la imagen */
+        z-index: 1000; 
+        display: flex; 
         justify-content: center;
         align-items: center;
-        transition: background-color 0.3s ease; /* Transición suave para el hover */
+        transition: background-color 0.3s ease; 
     }
-
     .whatsapp-float img {
-        width: 65px; /* Tamaño del logo dentro del círculo */
+        width: 65px; 
         height: 65px;
     }
-
     .whatsapp-float:hover {
-        background-color: #1DA851; /* Un tono más oscuro al pasar el ratón */
+        background-color: #1DA851; 
     }
+
 </style>
 {% endblock extra_css %}

@@ -1,11 +1,8 @@
 {% extends 'propiedades/base.html' %}
 {% load static %}
-
-{% block title %}Buscar Arriendos - Chiletop Corretaje de Propiedades{% endblock %} {# Cambia el título de la página #}
-
+{% block title %}Buscar Arriendos - Chiletop Corretaje de Propiedades{% endblock %}
 {% block content %}
 <h2 class="mb-4">Buscar Propiedades en Arriendo</h2> {# Título principal #}
-
 <form method="get" class="mb-4 p-4 bg-light rounded shadow-sm">
     <div class="row g-3">
         <div class="col-md-6">
@@ -13,12 +10,12 @@
             {{ form.direccion }}
         </div>
         <div class="col-md-3">
-            {{ form.precio_mensual_min.label_tag }} {# CAMBIADO #}
-            {{ form.precio_mensual_min }} {# CAMBIADO #}
+            {{ form.precio_mensual_min.label_tag }} 
+            {{ form.precio_mensual_min }} 
         </div>
         <div class="col-md-3">
-            {{ form.precio_mensual_max.label_tag }} {# CAMBIADO #}
-            {{ form.precio_mensual_max }} {# CAMBIADO #}
+            {{ form.precio_mensual_max.label_tag }} 
+            {{ form.precio_mensual_max }} 
         </div>
         <div class="col-12">
             {{ form.corredor.label_tag }}
@@ -28,26 +25,24 @@
     <div class="d-flex justify-content-between align-items-center mt-3">
         <button type="submit" class="btn btn-primary">Buscar</button>
         {% if busqueda_realizada %}
-            <a href="{% url 'buscar_arriendo' %}" class="btn btn-outline-secondary">Limpiar Búsqueda</a> {# CAMBIADO #}
+            <a href="{% url 'buscar_arriendo' %}" class="btn btn-outline-secondary">Limpiar Búsqueda</a> 
         {% endif %}
     </div>
 </form>
-
 <h3 class="mt-4 mb-3">Propiedades en Arriendo Disponibles</h3> {# Título de la lista #}
-
-{% if arriendos %} {# CAMBIADO #}
+{% if arriendos %} 
     <div class="row row-cols-1 g-3">
-        {% for arriendo in arriendos %} {# CAMBIADO #}
+        {% for arriendo in arriendos %}
             <div class="col">
                 <div class="card mb-3 p-3 border rounded shadow-sm">
                     <div class="row g-0 align-items-center">
                         <div class="col-md-4">
-                            {% if arriendo.imagen_principal %} {# CAMBIADO #}
-                                <a href="{% url 'detalle_arriendo' pk=arriendo.pk %}"> {# CAMBIADO #}
+                            {% if arriendo.imagen_principal %}
+                                <a href="{% url 'detalle_arriendo' pk=arriendo.pk %}">
                                     <img src="{{ arriendo.imagen_principal.url }}" class="img-fluid rounded-start" alt="Imagen principal de {{ arriendo.direccion }}" style="height: 150px; object-fit: cover; width: 100%;"> {# CAMBIADO #}
                                 </a>
                             {% else %}
-                                <a href="{% url 'detalle_arriendo' pk=arriendo.pk %}"> {# CAMBIADO #}
+                                <a href="{% url 'detalle_arriendo' pk=arriendo.pk %}">
                                     <img src="{% static 'propiedades/no_image.png' %}" class="img-fluid rounded-start" alt="No hay imagen" style="height: 150px; object-fit: cover; width: 100%;">
                                 </a>
                             {% endif %}
@@ -56,14 +51,14 @@
                             <div class="card-body py-0 py-md-2">
                                 <h5 class="card-title mb-1">
                                     <a href="{% url 'detalle_arriendo' pk=arriendo.pk %}" class="text-primary text-decoration-none"> {# CAMBIADO #}
-                                        {{ arriendo.direccion }} {# CAMBIADO #}
+                                        {{ arriendo.direccion }}
                                     </a>
                                 </h5>
-                                <p class="card-text mb-1"><strong>Precio Mensual:</strong> <span class="text-success">${{ arriendo.precio_mensual|floatformat:0 }}</span></p> {# CAMBIADO #}
-                                <p class="card-text mb-1"><strong>Corredor:</strong> {{ arriendo.corredor.nombre }}</p> {# CAMBIADO (asumiendo campo 'corredor' en Arriendo) #}
-                                <p class="card-text mb-1"><strong>Teléfono:</strong> {{ arriendo.corredor.telefono }}</p> {# CAMBIADO #}
-                                <p class="card-text mb-1"><strong>Correo:</strong> {{ arriendo.corredor.correo }}</p> {# CAMBIADO #}
-                                <a href="{% url 'detalle_arriendo' pk=arriendo.pk %}" class="btn btn-sm btn-outline-primary mt-2">Ver Detalles</a> {# CAMBIADO #}
+                                <p class="card-text mb-1"><strong>Precio Mensual:</strong> <span class="text-success">${{ arriendo.precio_mensual|floatformat:0 }}</span></p>
+                                <p class="card-text mb-1"><strong>Corredor:</strong> {{ arriendo.corredor.nombre }}</p>
+                                <p class="card-text mb-1"><strong>Teléfono:</strong> {{ arriendo.corredor.telefono }}</p>
+                                <p class="card-text mb-1"><strong>Correo:</strong> {{ arriendo.corredor.correo }}</p>
+                                <a href="{% url 'detalle_arriendo' pk=arriendo.pk %}" class="btn btn-sm btn-outline-primary mt-2">Ver Detalles</a>
                             </div>
                         </div>
                     </div>
@@ -71,11 +66,11 @@
             </div>
         {% endfor %}
     </div>
-{% else %} {# CAMBIADO #}
+{% else %}
     {% if busqueda_realizada %}
-        <p class="alert alert-info">No se encontraron propiedades de arriendo con los criterios de búsqueda.</p> {# CAMBIADO #}
+        <p class="alert alert-info">No se encontraron propiedades de arriendo con los criterios de búsqueda.</p>
     {% else %}
-        <p class="alert alert-warning">No hay propiedades de arriendo disponibles en este momento.</p> {# CAMBIADO #}
+        <p class="alert alert-warning">No hay propiedades de arriendo disponibles en este momento.</p>
     {% endif %}
 {% endif %}
 {% endblock %}

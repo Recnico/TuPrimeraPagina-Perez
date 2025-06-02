@@ -1,9 +1,7 @@
 {# propiedades/templates/propiedades/post_confirm_delete.html #}
 {% extends 'propiedades/base.html' %}
 {% load static %}
-
 {% block title %}Confirmar Eliminación{% endblock %}
-
 {% block content %}
 <div class="container mt-4">
     <div class="row justify-content-center">
@@ -15,7 +13,6 @@
                 <div class="card-body">
                     <p class="lead text-center">¿Estás seguro de que deseas eliminar el post: <strong>"{{ post.titulo }}"</strong>?</p>
                     <p class="text-center text-danger">Esta acción no se puede deshacer.</p>
-                    
                     <form method="post" class="text-center mt-4">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger btn-lg me-3">Sí, Eliminar</button>

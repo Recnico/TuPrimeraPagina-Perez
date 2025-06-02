@@ -1,28 +1,17 @@
 {# propiedades/templates/propiedades/agregar_venta.html #}
-
 {% extends 'propiedades/base.html' %}
-
 {% block content %}
 <h2>{{ titulo }}</h2>
-
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-
     <h3>Detalles de la Venta</h3>
-    {{ venta_form.as_p }} {# Renderiza los campos del formulario de Venta #}
-
+    {{ venta_form.as_p }}
     <h3>Galería de Imágenes</h3>
-
-    {# ESTO ES CRUCIAL PARA LOS FORMSETS - SIEMPRE DEBE ESTAR PRESENTE #}
     {{ formset.management_form }} 
-    
     <div id="image-formset-container">
-        {# Este bucle renderiza las imágenes existentes y, si el formset está configurado con extra > 0, también los formularios vacíos para nuevas imágenes #}
         {% for form in formset %}
             <div class="image-formset-row">
-                {# Muestra los campos del formulario de imagen (ej. el campo de archivo) #}
                 {{ form.as_p }}
-                {# Si can_delete=True en el formset, esto añade el checkbox de eliminación #}
                 {% if form.instance.pk %}<p>{{ form.DELETE }} Eliminar esta imagen</p>{% endif %}
                 <hr>
             </div>
@@ -30,23 +19,14 @@
     </div>
 
     {# Puedes eliminar el <input type="file" name="gallery_images" multiple> si prefieres usar solo el formset. #}
-    {# Si quieres mantenerlo, necesitarás un manejo adicional en views.py (ver abajo). #}
-    {# Si lo eliminas, asegúrate de que tu ImagenFormSet en forms.py tenga extra > 0 para nuevos campos de imagen. #}
 
     <button type="submit">Guardar Venta</button>
 </form>
 
-{# Mantén tus scripts y estilos si los necesitas para la previsualización de imágenes, etc. #}
-{# Sin embargo, si vas a usar solo el formset, la lógica del input "multi-image-selector" puede cambiar. #}
-{# El script de previsualización que tienes actualmente está ligado a "multi-image-selector", que ya no sería gestionado por el formset. #}
 <script>
-    // Si usas el formset para añadir imágenes, necesitarás un script para añadir nuevos formularios dinámicamente.
-    // Esto es un patrón común para formsets dinámicos. Por ahora, si no lo tienes, puedes ignorarlo.
-    // Si estás pasando 'extra' forms en tu ImagenFormSet desde la vista, esos se renderizarán automáticamente.
 </script>
 
 <style>
-    /* Tus estilos CSS */
 </style>
 
 {% endblock %}

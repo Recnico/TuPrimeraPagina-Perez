@@ -1,21 +1,16 @@
 {% extends "propiedades/base.html" %}
-
 {% block title %}
     Cambio de Contraseña
 {% endblock title %}
-
 {% block content_title %}
     Perfil de usuario
 {% endblock content_title %}
-
 {% block content %}
    <h2>Cambiar Contraseña</h2>
-
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }} {# Esto renderizará los campos del formulario como párrafos #}
     <button type="submit">Confirmar Cambio</button>
 </form>
-
 <p><a href="{% url 'perfil' %}">Volver al Perfil</a></p>
 {% endblock content %}
